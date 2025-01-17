@@ -22,4 +22,18 @@
 
 -----
 
-### 🚀 Stay tuned! Our code will be available.
+## 🚀 Stay tuned! Our code will be available (Feb, 2025)
+
+### 📝 Citation
+```
+@article{lee2025trg,
+      title     = {TRG-planner: Traversal risk graph-based path planning in unstructured environments for safe and efficient navigation},
+      author    = {Lee, Dongkyu and Nahrendra, I Made Aswin and Oh, Minho and Yu, Byeongho and Myung, Hyun},
+      journal   = {IEEE Robotics and Automation Letters},
+      volume    = {10},
+      number    = {2},
+      pages     = {1736--1743},
+      year      = {2025},
+      publisher = {IEEE}
+    }
+```
