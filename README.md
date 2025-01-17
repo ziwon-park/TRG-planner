@@ -2,15 +2,15 @@
   <h1 align="center">TRG-planner 🔫<br></h1>
   <h3 align="center">Traversal Risk Graph-Based Path Planning in Unstructured Environments for Safe and Efficient Navigation<br></h3>
   <p align="center">
-    <a href="https://dklee98.github.io/" class="external-link">Dongkyu Lee</a>
+    <a href="https://dklee98.github.io/" target="_blank" rel="noopener noreferrer">Dongkyu Lee</a>
     ·
-    <a href="https://anahrendra.github.io/" class="external-link">I Made Aswin Nahrendra</a>
+    <a href="https://anahrendra.github.io/" target="_blank" rel="noopener noreferrer">I Made Aswin Nahrendra</a>
     .
-    <a href="https://scholar.google.com/citations?user=z9NkqOMAAAAJ&hl=ko" class="external-link">Minho Oh</a>
+    <a href="https://scholar.google.com/citations?user=z9NkqOMAAAAJ&hl=ko" target="_blank" rel="noopener noreferrer">Minho Oh</a>
     .
-    <a href="https://scholar.google.com/citations?user=PlvkYEAAAAAJ&hl=ko" class="external-link">Byeongho Yu</a>
+    <a href="https://scholar.google.com/citations?user=PlvkYEAAAAAJ&hl=ko" target="_blank" rel="noopener noreferrer">Byeongho Yu</a>
     ·
-    <a href="https://scholar.google.com/citations?user=NrWfJ1gAAAAJ&hl=ko&oi=ao" class="external-link">Hyun Myung</a>
+    <a href="https://scholar.google.com/citations?user=NrWfJ1gAAAAJ&hl=ko&oi=ao" target="_blank" rel="noopener noreferrer">Hyun Myung</a>
   </p>  
 </p>
 
