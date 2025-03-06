@@ -1,0 +1,7 @@
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v16.0.6  # Version of clang-format
+    hooks:
+      - id: clang-format
+        files: \.(cpp|h)$  # Only check C++ and header files

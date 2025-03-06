@@ -1,0 +1,46 @@
+isDebug:                    true
+frameId:                    "map"
+topic:
+  input:
+    robotPose:              "/trg/input/default_pose"
+    robotOdom:              "/ground_truth_pose"
+    obs_cloud:              "/trip/trip_updated/alocal_cloud"
+    obs_grid:               "/elevation_mapping/elevation_map_raw__"
+    goal:                   "/move_base_simple/goal"
+  output:
+    goal:                   "/trg/output/default_goal"
+    path:                   "/trg/output/default_path"
+  debug:
+    rawPath:                "/trg/debug/default_rawPath"
+    graph:                  "/trg/debug/default_graph"
+    localGraph:             "/trg/debug/default_localGraph"
+    obsMap:                 "/trg/debug/default_obsMap"
+    preMap:                 "/trg/debug/default_preMap"
+    pathInfo:               "/trg/debug/default_pathInfo"
+
+timer:
+  graphRate:                5.0
+  planningRate:             10.0
+  publishRate:              10.0
+  debugRate:                1.0
+
+map:
+  isPrebuiltMap:            true
+  preMapPath:               "prebuilt_maps/sim_mountain_0.1.pcd"
+  isVoxelize:               false
+  voxelSize:                0.1
+
+trg:
+  isPrebuiltTRG:            false
+  preTrgPath:               "trg/predefined_trg_mountain.pcd"
+  isUpdate:                 false
+  expandDist:               0.6
+  robotSize:                0.3
+  sampleNum:                7
+  heightThreshold:          0.16
+  collisionThreshold:       0.1
+  updateCollisionThreshold: 0.5
+  safetyFactor:             3.0
+
+planner:
+  goalTolerance:            0.8

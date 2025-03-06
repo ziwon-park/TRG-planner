@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="rviz" default="true"/>
+    <arg name="map" default="mountain"/>
+
+    <rosparam command="load" file="$(find trg_planner)/configs/ros1/ros1_params.yaml" />
+    <rosparam command="load" file="$(find trg_planner)/configs/map/$(arg map).yaml" />
+
+    <!-- Planner -->
+    <node name="trg_ros1_node" pkg="trg_planner" type="trg_ros1_node" output="screen"/>
+
+    <!-- rviz -->
+    <node name="rvizualizer" pkg="rviz" type="rviz" args="-d $(find trg_planner)/pipelines/ros1/rviz/sim.rviz" if="$(arg rviz)"/>
+    
+</launch>
+
+<!-- launch-prefix="gdb -ex run args" -->

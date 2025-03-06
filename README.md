@@ -2,15 +2,15 @@
   <h1 align="center">TRG-planner 🔫<br></h1>
   <h3 align="center">Traversal Risk Graph-Based Path Planning in Unstructured Environments for Safe and Efficient Navigation<br></h3>
   <p align="center">
-    <a href="https://dklee98.github.io/" class="external-link" target="_blank" rel="noopener noreferrer">Dongkyu Lee</a>
+    <a href="https://dklee98.github.io/">Dongkyu Lee</a>
     ·
-    <a href="https://anahrendra.github.io/" class="external-link" target="_blank" rel="noopener noreferrer">I Made Aswin Nahrendra</a>
+    <a href="https://anahrendra.github.io/">I Made Aswin Nahrendra</a>
     .
-    <a href="https://scholar.google.com/citations?user=z9NkqOMAAAAJ&hl=ko" class="external-link" target="_blank" rel="noopener noreferrer">Minho Oh</a>
+    <a href="https://scholar.google.com/citations?user=z9NkqOMAAAAJ&hl=ko">Minho Oh</a>
     .
-    <a href="https://scholar.google.com/citations?user=PlvkYEAAAAAJ&hl=ko" class="external-link" target="_blank" rel="noopener noreferrer">Byeongho Yu</a>
+    <a href="https://scholar.google.com/citations?user=PlvkYEAAAAAJ&hl=ko">Byeongho Yu</a>
     ·
-    <a href="https://scholar.google.com/citations?user=NrWfJ1gAAAAJ&hl=ko&oi=ao" class="external-link" target="_blank" rel="noopener noreferrer">Hyun Myung</a>
+    <a href="https://scholar.google.com/citations?user=NrWfJ1gAAAAJ&hl=ko&oi=ao">Hyun Myung</a>
   </p>  
 </p>
 
@@ -24,7 +24,9 @@
 
 ## 🚀 Stay tuned! Our code will be available (Feb, 2025)
 
-### 📝 Citation
+## 📋 To Do
+
+## 📝 Citation
 ```
 @article{lee2025trg,
       title     = {TRG-planner: Traversal risk graph-based path planning in unstructured environments for safe and efficient navigation},
@@ -37,3 +39,8 @@
       publisher = {IEEE}
     }
 ```
+
+## Contact
+
+## License
+The TRG-planner code provided in this repository is released under the [Apache-2.0 license](./LICENSE).
