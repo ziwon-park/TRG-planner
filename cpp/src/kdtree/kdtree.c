@@ -139,7 +139,7 @@ static void clear_rec(struct kdnode *node, void (*destr)(void*))
 
 	clear_rec(node->left, destr);
 	clear_rec(node->right, destr);
-	
+
 	if(destr) {
 		destr(node->data);
 	}

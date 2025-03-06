@@ -3,7 +3,7 @@
   <name>trg_planner</name>
   <version>1.0.0</version>
   <description>TRG-planner package</description>
-  
+
   <!-- Author and maintainers -->
   <author email="dklee@kaist.ac.kr">Dongkyu Lee</author>
   <maintainer email="dklee@kaist.ac.kr">Dongkyu Lee</maintainer>
@@ -16,5 +16,5 @@
   <build_depend>roscpp</build_depend>
 
   <exec_depend>roscpp</exec_depend>
-  
+
 </package>

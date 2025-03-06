@@ -1,5 +1,5 @@
-#ifndef ROS1_NODE_H
-#define ROS1_NODE_H
+#ifndef PIPELINES_ROS1_INCLUDE_ROS1_NODE_H_
+#define PIPELINES_ROS1_INCLUDE_ROS1_NODE_H_
 
 #include "planner/trg_planner.h"
 #include "ros1_utils.hpp"
@@ -59,4 +59,4 @@ class ROS1Node : public TRGPlanner {
   void vizGraph(std::string type, ros::Publisher &pub);
 };
 
-#endif
+#endif  // PIPELINES_ROS1_INCLUDE_ROS1_NODE_H_

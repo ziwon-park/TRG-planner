@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef COMMON_H_
+#define COMMON_H_
 
 #pragma once
 
@@ -16,8 +16,10 @@
 #include <memory>
 #include <mutex>
 #include <random>
+#include <string>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 #include <Eigen/Dense>
 #include <opencv2/core.hpp>
@@ -110,4 +112,4 @@ inline std::string to_string_float(float num, int decimal = 2) {
   return ss.str();
 }
 
-#endif  // COMMON_H
+#endif  // COMMON_H_

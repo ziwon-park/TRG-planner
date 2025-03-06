@@ -1,5 +1,5 @@
-#ifndef TRG_PLANNER_H
-#define TRG_PLANNER_H
+#ifndef CPP_INCLUDE_PLANNER_TRG_PLANNER_H_
+#define CPP_INCLUDE_PLANNER_TRG_PLANNER_H_
 
 #include "graph/trg.h"
 #include "utils/common.h"
@@ -56,7 +56,7 @@ class PlanningFSM : public FSM<planningState> {
 
 class TRGPlanner {
  public:
-  explicit TRGPlanner();
+  TRGPlanner();
   virtual ~TRGPlanner();
 
   void init();
@@ -167,4 +167,4 @@ class TRGPlanner {
   } flag_;
 };
 
-#endif
+#endif  // CPP_INCLUDE_PLANNER_TRG_PLANNER_H_

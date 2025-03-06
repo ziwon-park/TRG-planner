@@ -30,7 +30,7 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(trg_ros1_node 
+add_executable(trg_ros1_node
     ${CMAKE_SOURCE_DIR}/pipelines/ros1/src/main.cpp
     ${CMAKE_SOURCE_DIR}/pipelines/ros1/src/ros1_node.cpp
 )

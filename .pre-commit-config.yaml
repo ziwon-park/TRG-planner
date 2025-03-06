@@ -1,7 +1,44 @@
-# .pre-commit-config.yaml
+ci:
+  autofix: true
+
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml
+        exclude: \.clang-format$
+      - id: check-json
+      - id: check-xml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  ######################################################################
+  # Markdown Formatting
+  ######################################################################
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.9
+    hooks:
+      - id: mdformat
+        exclude: 'github/'
+
+  ######################################################################
+  # C++ Formatting
+  ######################################################################
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v16.0.6  # Version of clang-format
     hooks:
       - id: clang-format
-        files: \.(cpp|h)$  # Only check C++ and header files
+        files: \.(cpp|h|hpp)$  # Only check C++ and header files
+        exclude: cpp/include/kdtree|cpp/src/kdtree  # Exclude kdtree files
+
+  - repo: https://github.com/cpplint/cpplint
+    rev: "1.6.1"
+    hooks:
+      - id: cpplint
+        args:
+          [
+            "--filter=-whitespace/line_length,-legal/copyright,-build/include_order,-runtime/references,-build/c++11,-build/namespaces,-build/include_what_you_use,-build/include_subdir",
+          ]
+        exclude: cpp/include/kdtree|cpp/src/kdtree  # Exclude kdtree files

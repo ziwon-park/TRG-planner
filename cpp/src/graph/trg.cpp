@@ -126,7 +126,7 @@ bool TRG::addNode(int node_id, Eigen::Vector2f& node_pos, NodeState state, std::
 
   /// Create new node
   kdres*      res = kd_nearest2(graph.map_tree, node_pos.x(), node_pos.y());
-  PtsDefault* pt  = (PtsDefault*)kd_res_item_data(res);
+  PtsDefault* pt  = reinterpret_cast<PtsDefault*> kd_res_item_data(res);
   kd_res_free(res);
   Node* node           = new Node(node_id, node_pos, pt->z, state);
   graph.nodes[node_id] = node;
@@ -191,9 +191,9 @@ void TRG::wireEdge(Node* node1, Node* node2, std::string type) {
     return;
   }
   while (!kd_res_end(res)) {
-    PtsDefault*     pt = (PtsDefault*)kd_res_item_data(res);
-    PtsDefault      p;
-    Eigen::Vector2f p2d(pt->x - center.x(), pt->y - center.y());
+    PtsDefault* pt = reinterpret_cast<PtsDefault*> kd_res_item_data(res);
+    PtsDefault                                     p;
+    Eigen::Vector2f                                p2d(pt->x - center.x(), pt->y - center.y());
     p2d = R * p2d;
     p.x = p2d.x();
     p.y = p2d.y();
@@ -218,8 +218,8 @@ void TRG::wireEdge(Node* node1, Node* node2, std::string type) {
   for (int i = 0; i < n; i++) {
     A.row(i) << ellipse_pts->points[i].x, ellipse_pts->points[i].y, ellipse_pts->points[i].z;
   }
-  Eigen::MatrixXf                   centered = A.rowwise() - A.colwise().mean();
-  Eigen::MatrixXf                   cov = (centered.adjoint() * centered) / double(A.rows() - 1);
+  Eigen::MatrixXf centered = A.rowwise() - A.colwise().mean();
+  Eigen::MatrixXf cov      = (centered.adjoint() * centered) / static_cast<double>(A.rows() - 1);
   Eigen::JacobiSVD<Eigen::MatrixXf> svd(cov, Eigen::DecompositionOptions::ComputeFullU);
   Eigen::MatrixXf                   eigenvectors = svd.matrixU().normalized();
   Eigen::Vector3f                   normal       = eigenvectors.col(2);
@@ -289,8 +289,8 @@ void TRG::expandGraph(int ref_id, std::string type) {
     /// Add new nodes and wire edges
     for (auto& sample : samples) {
       /// 1. Check if the sample is already in the graph
-      kdres* res           = kd_nearest2(graph.node_tree, sample.x(), sample.y());
-      Node*  existing_node = (Node*)kd_res_item_data(res);
+      kdres* res          = kd_nearest2(graph.node_tree, sample.x(), sample.y());
+      Node* existing_node = reinterpret_cast<Node*> kd_res_item_data(res);
       kd_res_free(res);
       if (existing_node->state_ == NodeState::Invalid) {
         continue;
@@ -315,7 +315,7 @@ void TRG::expandGraph(int ref_id, std::string type) {
             graph.node_tree, new_node->pos_.x(), new_node->pos_.y(), param_.expand_dist);
         if (kd_res_size(res2) > 0) {
           while (!kd_res_end(res2)) {
-            Node* existing_node = (Node*)kd_res_item_data(res2);
+            Node* existing_node = reinterpret_cast<Node*> kd_res_item_data(res2);
             if (existing_node->state_ == NodeState::Invalid) {
               kd_res_next(res2);
               continue;
@@ -441,7 +441,7 @@ void TRG::setGoal(Eigen::Vector3f& goal) {
     }
     goal_.isKnown = false;
   } else {
-    Node* near_node = (Node*)kd_res_item_data(res);
+    Node* near_node = reinterpret_cast<Node*> kd_res_item_data(res);
     goal_.node      = near_node;
     kd_res_free(res);
     goal_.isKnown = true;
@@ -496,8 +496,8 @@ bool TRG::planSafePath(Eigen::Vector2f&              start2d,
 
   trgStruct& global_graph = *trgMap_["global"];
 
-  kdres* res        = kd_nearest2(global_graph.node_tree, start2d.x(), start2d.y());
-  Node*  start_node = (Node*)kd_res_item_data(res);
+  kdres* res       = kd_nearest2(global_graph.node_tree, start2d.x(), start2d.y());
+  Node* start_node = reinterpret_cast<Node*> kd_res_item_data(res);
 
   std::priority_queue<OptimizeNode*,
                       std::vector<OptimizeNode*>,
@@ -638,7 +638,7 @@ bool TRG::isCollision(Eigen::Vector2f& pos, std::string type, float threshold = 
   std::vector<PtsDefault*> pts;
   float                    z_med = 0.0;
   while (!kd_res_end(res)) {
-    PtsDefault* pt = (PtsDefault*)kd_res_item_data(res);
+    PtsDefault* pt = reinterpret_cast<PtsDefault*> kd_res_item_data(res);
     pts.push_back(pt);
     kd_res_next(res);
   }
@@ -654,7 +654,7 @@ bool TRG::isCollision(Eigen::Vector2f& pos, std::string type, float threshold = 
       cnt++;
     }
   }
-  float ratio = (float)cnt / total;
+  float ratio = static_cast<float> cnt / total;
   if (ratio > threshold) {
     return true;
   }

@@ -1,5 +1,5 @@
-#ifndef TRG_H
-#define TRG_H
+#ifndef CPP_INCLUDE_GRAPH_TRG_H_
+#define CPP_INCLUDE_GRAPH_TRG_H_
 
 #include "kdtree/kdtree.h"
 #include "utils/common.h"
@@ -90,7 +90,7 @@ class TRG {
 
  protected:
   struct trgStruct {
-    trgStruct(std::string type) : type(type), node_id(0) {}
+    explicit trgStruct(std::string type) : type(type), node_id(0) {}
     std::string type;
 
     std::unordered_map<int, Node*> nodes;
@@ -137,4 +137,4 @@ class TRG {
   } mtx;
 };
 
-#endif
+#endif  // CPP_INCLUDE_GRAPH_TRG_H_

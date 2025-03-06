@@ -11,7 +11,7 @@
     <a href="https://scholar.google.com/citations?user=PlvkYEAAAAAJ&hl=ko">Byeongho Yu</a>
     ·
     <a href="https://scholar.google.com/citations?user=NrWfJ1gAAAAJ&hl=ko&oi=ao">Hyun Myung</a>
-  </p>  
+  </p>
 </p>
 
 <p align="center">
@@ -20,13 +20,14 @@
     <em>TRG-planner finds a safe and efficient path for ground-based robots in unstructured environments.<br></em>
 </p>
 
------
+______________________________________________________________________
 
 ## 🚀 Stay tuned! Our code will be available (Feb, 2025)
 
 ## 📋 To Do
 
 ## 📝 Citation
+
 ```
 @article{lee2025trg,
       title     = {TRG-planner: Traversal risk graph-based path planning in unstructured environments for safe and efficient navigation},
@@ -43,4 +44,5 @@
 ## Contact
 
 ## License
+
 The TRG-planner code provided in this repository is released under the [Apache-2.0 license](./LICENSE).
