@@ -1,17 +1,8 @@
 message(STATUS "Configuring cpp")
 
 set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS OFF)
 
-# set (PCL_DIR "/usr/include/pcl-1.10")
-find_package(PCL 1.10 REQUIRED)
-# set (PCL_DIR "/usr/local/include/pcl-1.14")
-# find_package(PCL 1.14 REQUIRED)
-# message(STATUS "######## PCL version: ${PCL_VERSION}")
-# message(STATUS "PCL include dirs: ${PCL_INCLUDE_DIRS}")
-# message(STATUS "PCL_LIBRARIES: ${PCL_LIBRARIES}")
-
+find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenMP) # cpp parallel programming

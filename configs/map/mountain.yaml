@@ -14,7 +14,7 @@ map:
 
 trg:
   isPrebuiltTRG:            false
-  prebuiltTrgPath:          "trg/predefined_trg_mountain.pcd"
+  prebuiltTRGPath:          "trg/predefined_trg_mountain.pcd"
   isUpdate:                 false
   expandDist:               0.6
   robotSize:                0.3

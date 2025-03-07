@@ -1,5 +1,7 @@
 #include "ros1_node.h"
 
+#include <yaml-cpp/yaml.h>
+
 ROS1Node::ROS1Node(const ros::NodeHandle &nh) : nh_(nh) {
   getParams(nh_);
 
@@ -37,7 +39,7 @@ void ROS1Node::getParams(const ros::NodeHandle &nh) {
 
   nh.param("/ros1/topic/input/egoPose",
            topics_["egoPose"],
-           std::string("/trg_ros1_node/input/defaault_ego_pose"));
+           std::string("/trg_ros1_node/input/default_ego_pose"));
   nh.param("/ros1/topic/input/egoOdom",
            topics_["egoOdom"],
            std::string("/trg_ros1_node/input/default_ego_odom"));
@@ -71,29 +73,36 @@ void ROS1Node::getParams(const ros::NodeHandle &nh) {
            topics_["pathInfo"],
            std::string("/trg_ros1_node/debug/default_pathInfo"));
 
-  nh.param("/isVerbose", param_.isVerbose, true);
+  std::string map_config_name;
+  nh.param("mapConfig", map_config_name, std::string("default"));
+  std::string map_config_path = std::string(TRG_DIR) + "/configs/map/" + map_config_name + ".yaml";
+  print("Loading map config from: " + map_config_path, param_.isVerbose);
+  YAML::Node map_config_yaml = YAML::LoadFile(map_config_path);
 
-  nh.param("/timer/graphRate", param_.graph_rate, 1.0f);
-  nh.param("/timer/planningRate", param_.planning_rate, 1.0f);
-  nh.param("/timer/publishRate", param_.publish_rate, 1.0f);
-  nh.param("/timer/debugRate", param_.debug_rate, 1.0f);
+  param_.isVerbose = map_config_yaml["isVerbose"].as<bool>(true);
 
-  nh.param("/map/isPrebuiltMap", param_.isPreMap, false);
-  nh.param("/map/prebuiltMapPath", param_.preMapPath, std::string(""));
-  nh.param("/map/isVoxelize", param_.isVoxelize, false);
-  nh.param("/map/voxelSize", param_.VoxelSize, 0.1f);
+  param_.graph_rate    = map_config_yaml["timer"]["graphRate"].as<float>(1.0f);
+  param_.planning_rate = map_config_yaml["timer"]["planningRate"].as<float>(1.0f);
+  param_.publish_rate  = map_config_yaml["timer"]["publishRate"].as<float>(1.0f);
+  param_.debug_rate    = map_config_yaml["timer"]["debugRate"].as<float>(1.0f);
 
-  nh.param("/trg/isPrebuiltTRG", param_.isPreGraph, false);
-  nh.param("/trg/prebuiltTrgPath", param_.preGraphPath, std::string(""));
-  nh.param("/trg/isUpdate", param_.isUpdate, false);
-  nh.param("/trg/expandDist", param_.expandDist, 0.6f);
-  nh.param("/trg/robotSize", param_.robotSize, 0.3f);
-  nh.param("/trg/sampleNum", param_.sampleNum, 20);
-  nh.param("/trg/heightThreshold", param_.heightThreshold, 0.15f);
-  nh.param("/trg/collisionThreshold", param_.collisionThreshold, 0.2f);
-  nh.param("/trg/updateCollisionThreshold", param_.updateCollisionThreshold, 0.2f);
-  nh.param("/trg/safetyFactor", param_.safetyFactor, 1.0f);
-  nh.param("/trg/goalTolerance", param_.goal_tolerance, 0.2f);
+  param_.isPreMap   = map_config_yaml["map"]["isPrebuiltMap"].as<bool>(false);
+  param_.preMapPath = map_config_yaml["map"]["prebuiltMapPath"].as<std::string>("");
+  param_.isVoxelize = map_config_yaml["map"]["isVoxelize"].as<bool>(false);
+  param_.VoxelSize  = map_config_yaml["map"]["voxelSize"].as<float>(0.1f);
+
+  param_.isPreGraph         = map_config_yaml["trg"]["isPrebuiltTRG"].as<bool>(false);
+  param_.preGraphPath       = map_config_yaml["trg"]["prebuiltTRGPath"].as<std::string>("");
+  param_.isUpdate           = map_config_yaml["trg"]["isUpdate"].as<bool>(false);
+  param_.expandDist         = map_config_yaml["trg"]["expandDist"].as<float>(0.6f);
+  param_.robotSize          = map_config_yaml["trg"]["robotSize"].as<float>(0.3f);
+  param_.sampleNum          = map_config_yaml["trg"]["sampleNum"].as<int>(20);
+  param_.heightThreshold    = map_config_yaml["trg"]["heightThreshold"].as<float>(0.15f);
+  param_.collisionThreshold = map_config_yaml["trg"]["collisionThreshold"].as<float>(0.2f);
+  param_.updateCollisionThreshold =
+      map_config_yaml["trg"]["updateCollisionThreshold"].as<float>(0.2f);
+  param_.safetyFactor   = map_config_yaml["trg"]["safetyFactor"].as<float>(1.0f);
+  param_.goal_tolerance = map_config_yaml["trg"]["goalTolerance"].as<float>(0.8f);
 }
 
 void ROS1Node::cbPose(const ROS1Types::Pose::ConstPtr &msg) {
@@ -242,7 +251,7 @@ void ROS1Node::publishTimer() {
     if (flag_.pathFound) {
       flag_.pathFound = false;
       publishPath(frame_id, path_.smooth, pub.path_);
-      std_msgs::Float32MultiArray path_info_msg;
+      ROS1Types::FloatArray path_info_msg;
       path_info_msg.data.push_back(path_.direct_dist);
       path_info_msg.data.push_back(path_.raw_path_length);
       path_info_msg.data.push_back(path_.smooth_path_length);

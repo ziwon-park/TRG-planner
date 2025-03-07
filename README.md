@@ -26,6 +26,9 @@ ______________________________________________________________________
 
 ## 📋 To Do
 
+echo 'export LD_LIBRARY_PATH=/home/trg_test_ws/build/trg_planner/cpp:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc
+
 ## 📝 Citation
 
 ```

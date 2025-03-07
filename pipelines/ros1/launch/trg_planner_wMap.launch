@@ -7,10 +7,12 @@
     <rosparam command="load" file="$(find trg_planner)/configs/map/$(arg map).yaml" />
 
     <!-- Planner -->
-    <node name="trg_ros1_node" pkg="trg_planner" type="trg_ros1_node" output="screen"/>
+    <node name="trg_ros1_node" pkg="trg_planner" type="trg_ros1_node" output="screen">
+        <param name="mapConfig" value="$(arg map)"/>
+    </node>
 
     <!-- rviz -->
-    <node name="rvizualizer" pkg="rviz" type="rviz" args="-d $(find trg_planner)/pipelines/ros1/rviz/sim.rviz" if="$(arg rviz)"/>
+    <node name="rvizualizer" pkg="rviz" type="rviz" args="-d $(find trg_planner)/pipelines/ros1/rviz/$(arg map).rviz" if="$(arg rviz)"/>
 
 </launch>
 

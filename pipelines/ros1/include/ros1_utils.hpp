@@ -1,5 +1,5 @@
-#ifndef ROS1_UTILS_HPP_
-#define ROS1_UTILS_HPP_
+#ifndef PIPELINES_ROS1_INCLUDE_ROS1_UTILS_HPP_
+#define PIPELINES_ROS1_INCLUDE_ROS1_UTILS_HPP_
 
 #pragma once
 
@@ -78,4 +78,4 @@ inline void publishPath(const std::string                   frame_id,
   pub.publish(path_msg);
 }
 
-#endif  // ROS1_UTILS_HPP_
+#endif  // PIPELINES_ROS1_INCLUDE_ROS1_UTILS_HPP_
