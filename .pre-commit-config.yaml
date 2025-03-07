@@ -31,7 +31,7 @@ repos:
     hooks:
       - id: clang-format
         files: \.(cpp|h|hpp)$  # Only check C++ and header files
-        exclude: cpp/include/kdtree|cpp/src/kdtree  # Exclude kdtree files
+        exclude: cpp/trg_planner/core/trg_planner/include/kdtree|cpp/trg_planner/core/trg_planner/src/kdtree  # Exclude kdtree files
 
   - repo: https://github.com/cpplint/cpplint
     rev: "1.6.1"
@@ -41,4 +41,4 @@ repos:
           [
             "--filter=-whitespace/line_length,-legal/copyright,-build/include_order,-runtime/references,-build/c++11,-build/namespaces,-build/include_what_you_use,-build/include_subdir",
           ]
-        exclude: cpp/include/kdtree|cpp/src/kdtree  # Exclude kdtree files
+        exclude: cpp/trg_planner/core/trg_planner/include/kdtree|cpp/trg_planner/core/trg_planner/src/kdtree  # Exclude kdtree files

@@ -1,9 +1,10 @@
 #ifndef PIPELINES_ROS2_INCLUDE_ROS2_NODE_H_
 #define PIPELINES_ROS2_INCLUDE_ROS2_NODE_H_
 
-#include "planner/trg_planner.h"
+#include "trg_planner/include/planner/trg_planner.h"
+#include "trg_planner/include/utils/common.h"
+
 #include "ros2_utils.hpp"
-#include "utils/common.h"
 
 class ROS2Node : public TRGPlanner {
  public:

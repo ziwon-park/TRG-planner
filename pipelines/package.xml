@@ -2,7 +2,7 @@
 <package format="3">
   <name>trg_planner_ros</name>
   <version>1.0.0</version>
-  <description>TRG-planner ROS1 package</description>
+  <description>TRG-planner ROS-Pipeline package</description>
 
   <!-- Author and maintainers -->
   <author email="dklee@kaist.ac.kr">Dongkyu Lee</author>
@@ -13,8 +13,9 @@
 
   <!-- Dependencies -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>roscpp</exec_depend>
-
+  <export>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+  </export>
 </package>

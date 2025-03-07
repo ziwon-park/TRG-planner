@@ -20,15 +20,15 @@ def generate_launch_description():
     )
 
     # Get the path to the configuration files
-    package_share_directory = get_package_share_directory('trg_planner')
+    package_share_directory = get_package_share_directory('trg_planner_ros')
 
     # Get the path to the configuration files
-    ros2_config_file = [package_share_directory, '/configs/ros2/', 'ros2_params.yaml']
+    ros2_config_file = [package_share_directory, '/config/', 'ros2_params.yaml']
     rviz_config_file = [os.path.join(os.getcwd(), 'src/TRG-planner/pipelines/ros2/rviz/'), LaunchConfiguration('map'), '.rviz']
 
     # Load rosparam (YAML file)
     node = Node(
-        package='trg_planner',
+        package='trg_planner_ros',
         executable='trg_ros2_node',
         name='trg_ros2_node',
         parameters=[ros2_config_file,

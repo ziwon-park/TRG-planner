@@ -1,0 +1,2 @@
+add_executable(trg_example run_trg_planner.cc)
+target_link_libraries(trg_example PRIVATE planner_lib)

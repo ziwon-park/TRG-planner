@@ -1,0 +1,19 @@
+ros1:
+  frameId:                    "map"
+  isDebug:                    true
+  topic:
+    input:
+      egoPose:                "/trg/input/default_pose"
+      egoOdom:                "/fake_robot_pose"
+      obsCloud:               "/trip/trip_updated/alocal_cloud"
+      obsGrid:                "/elevation_mapping/elevation_map_raw__"
+      goal:                   "/move_base_simple/goal"
+    output:
+      preMap:                 "/trg/output/default_preMap"
+      goal:                   "/trg/output/default_goal"
+      path:                   "/trg/output/default_path"
+    debug:
+      globalTRG:           "/trg/debug/default_globalTRG"
+      localTRG:            "/trg/debug/default_localTRG"
+      obsMap:              "/trg/debug/default_obsMap"
+      pathInfo:              "/trg/debug/default_pathInfo"

@@ -388,7 +388,7 @@ log/
 # Emacs
 
 # Colcon custom files
-COLCON_IGNORE
+# COLCON_IGNORE
 AMENT_IGNORE
 
 ### VisualStudioCode ###

@@ -73,7 +73,12 @@ void ROS1Node::getParams(const ros::NodeHandle &nh) {
 
   std::string map_config_name;
   nh.param("mapConfig", map_config_name, std::string("default"));
-  std::string map_config_path = std::string(TRG_DIR) + "/configs/map/" + map_config_name + ".yaml";
+  std::string map_config_path =
+      std::string(TRG_ROS_DIR) + "/../config/" + map_config_name + ".yaml";
+  if (!std::filesystem::exists(map_config_path)) {
+    print_error("Map config file does not exist: " + map_config_path);
+    exit(1);
+  }
   TRGPlanner::setParams(map_config_path);
 }
 

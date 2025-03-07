@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>trg_planner</name>
+  <name>trg_planner_ros</name>
   <version>1.0.0</version>
-  <description>TRG-planner package</description>
+  <description>TRG-planner ROS2 package</description>
 
   <!-- Author and maintainers -->
   <author email="dklee@kaist.ac.kr">Dongkyu Lee</author>
