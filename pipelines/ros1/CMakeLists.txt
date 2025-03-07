@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 catkin_package()
 
@@ -30,5 +29,4 @@ add_executable(trg_ros1_node
 target_link_libraries(trg_ros1_node
     ${catkin_LIBRARIES}
     planner_lib
-    yaml-cpp
 )

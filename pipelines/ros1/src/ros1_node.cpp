@@ -1,7 +1,5 @@
 #include "ros1_node.h"
 
-#include <yaml-cpp/yaml.h>
-
 ROS1Node::ROS1Node(const ros::NodeHandle &nh) : nh_(nh) {
   getParams(nh_);
 
@@ -76,33 +74,7 @@ void ROS1Node::getParams(const ros::NodeHandle &nh) {
   std::string map_config_name;
   nh.param("mapConfig", map_config_name, std::string("default"));
   std::string map_config_path = std::string(TRG_DIR) + "/configs/map/" + map_config_name + ".yaml";
-  print("Loading map config from: " + map_config_path, param_.isVerbose);
-  YAML::Node map_config_yaml = YAML::LoadFile(map_config_path);
-
-  param_.isVerbose = map_config_yaml["isVerbose"].as<bool>(true);
-
-  param_.graph_rate    = map_config_yaml["timer"]["graphRate"].as<float>(1.0f);
-  param_.planning_rate = map_config_yaml["timer"]["planningRate"].as<float>(1.0f);
-  param_.publish_rate  = map_config_yaml["timer"]["publishRate"].as<float>(1.0f);
-  param_.debug_rate    = map_config_yaml["timer"]["debugRate"].as<float>(1.0f);
-
-  param_.isPreMap   = map_config_yaml["map"]["isPrebuiltMap"].as<bool>(false);
-  param_.preMapPath = map_config_yaml["map"]["prebuiltMapPath"].as<std::string>("");
-  param_.isVoxelize = map_config_yaml["map"]["isVoxelize"].as<bool>(false);
-  param_.VoxelSize  = map_config_yaml["map"]["voxelSize"].as<float>(0.1f);
-
-  param_.isPreGraph         = map_config_yaml["trg"]["isPrebuiltTRG"].as<bool>(false);
-  param_.preGraphPath       = map_config_yaml["trg"]["prebuiltTRGPath"].as<std::string>("");
-  param_.isUpdate           = map_config_yaml["trg"]["isUpdate"].as<bool>(false);
-  param_.expandDist         = map_config_yaml["trg"]["expandDist"].as<float>(0.6f);
-  param_.robotSize          = map_config_yaml["trg"]["robotSize"].as<float>(0.3f);
-  param_.sampleNum          = map_config_yaml["trg"]["sampleNum"].as<int>(20);
-  param_.heightThreshold    = map_config_yaml["trg"]["heightThreshold"].as<float>(0.15f);
-  param_.collisionThreshold = map_config_yaml["trg"]["collisionThreshold"].as<float>(0.2f);
-  param_.updateCollisionThreshold =
-      map_config_yaml["trg"]["updateCollisionThreshold"].as<float>(0.2f);
-  param_.safetyFactor   = map_config_yaml["trg"]["safetyFactor"].as<float>(1.0f);
-  param_.goal_tolerance = map_config_yaml["trg"]["goalTolerance"].as<float>(0.8f);
+  TRGPlanner::setParams(map_config_path);
 }
 
 void ROS1Node::cbPose(const ROS1Types::Pose::ConstPtr &msg) {

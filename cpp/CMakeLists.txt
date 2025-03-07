@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(yaml-cpp REQUIRED)
 find_package(OpenMP) # cpp parallel programming
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -27,4 +28,5 @@ target_include_directories(planner_lib PUBLIC
 target_link_libraries(planner_lib
     ${PCL_LIBRARIES}
     ${EIGEN3_LIBRARIES}
+    yaml-cpp
 )

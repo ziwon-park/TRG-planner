@@ -61,6 +61,7 @@ class TRGPlanner {
 
   void init();
   void loadPrebuiltMap();
+  void setParams(const std::string& config_path);
 
   void runGraphFSM();
   void runPlanningFSM();

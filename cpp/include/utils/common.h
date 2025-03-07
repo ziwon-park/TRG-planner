@@ -24,6 +24,7 @@
 #include <Eigen/Dense>
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
+#include <yaml-cpp/yaml.h>
 //// PCL
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/common/common.h>

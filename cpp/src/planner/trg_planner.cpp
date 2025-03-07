@@ -77,6 +77,36 @@ void TRGPlanner::loadPrebuiltMap() {
   print("Prebuilt map is loaded");
 }
 
+void TRGPlanner::setParams(const std::string& config_path) {
+  print("Loading config from: " + config_path);
+
+  YAML::Node config = YAML::LoadFile(config_path);
+
+  param_.isVerbose = config["isVerbose"].as<bool>(true);
+
+  param_.graph_rate    = config["timer"]["graphRate"].as<float>(1.0f);
+  param_.planning_rate = config["timer"]["planningRate"].as<float>(1.0f);
+  param_.publish_rate  = config["timer"]["publishRate"].as<float>(1.0f);
+  param_.debug_rate    = config["timer"]["debugRate"].as<float>(1.0f);
+
+  param_.isPreMap   = config["map"]["isPrebuiltMap"].as<bool>(false);
+  param_.preMapPath = config["map"]["prebuiltMapPath"].as<std::string>("");
+  param_.isVoxelize = config["map"]["isVoxelize"].as<bool>(false);
+  param_.VoxelSize  = config["map"]["voxelSize"].as<float>(0.1f);
+
+  param_.isPreGraph               = config["trg"]["isPrebuiltTRG"].as<bool>(false);
+  param_.preGraphPath             = config["trg"]["prebuiltTRGPath"].as<std::string>("");
+  param_.isUpdate                 = config["trg"]["isUpdate"].as<bool>(false);
+  param_.expandDist               = config["trg"]["expandDist"].as<float>(0.6f);
+  param_.robotSize                = config["trg"]["robotSize"].as<float>(0.3f);
+  param_.sampleNum                = config["trg"]["sampleNum"].as<int>(20);
+  param_.heightThreshold          = config["trg"]["heightThreshold"].as<float>(0.15f);
+  param_.collisionThreshold       = config["trg"]["collisionThreshold"].as<float>(0.2f);
+  param_.updateCollisionThreshold = config["trg"]["updateCollisionThreshold"].as<float>(0.2f);
+  param_.safetyFactor             = config["trg"]["safetyFactor"].as<float>(1.0f);
+  param_.goal_tolerance           = config["trg"]["goalTolerance"].as<float>(0.8f);
+}
+
 void TRGPlanner::runGraphFSM() {
   while (is_running.load()) {
     auto start_loop = tic();

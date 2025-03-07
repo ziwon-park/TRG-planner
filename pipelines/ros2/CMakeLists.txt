@@ -11,7 +11,6 @@ find_package(pcl_conversions REQUIRED)
 find_package(pcl_ros REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -35,7 +34,6 @@ ament_target_dependencies(trg_ros2_node
 
 target_link_libraries(trg_ros2_node
     planner_lib
-    yaml-cpp
     ${PCL_INCLUDE_DIRS}
 )
 install(TARGETS
