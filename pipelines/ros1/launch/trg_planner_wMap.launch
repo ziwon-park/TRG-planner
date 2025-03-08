@@ -11,9 +11,10 @@
         <param name="mapConfig" value="$(arg map)"/>
     </node>
 
+    <!-- Fake Pose Publisher -->
+    <node name="fake_pose_pub" pkg="trg_planner_ros" type="fake_pose_pub.py" output="screen"/>
+
     <!-- rviz -->
     <node name="rvizualizer" pkg="rviz" type="rviz" args="-d $(find trg_planner_ros)/ros1/rviz/$(arg map).rviz" if="$(arg rviz)"/>
 
 </launch>
-
-<!-- launch-prefix="gdb -ex run args" -->

@@ -1,13 +1,19 @@
-import yaml
 import os
-import time
 import sys
-import trg_planner
+import time
+
 import numpy as np
+import trg_planner
+
+
+def signal_handler(sig, frame):
+    print('Exiting and plotting data...')
+    sys.exit(0)
 
 
 # Get the path of root directory outside the package
-root_directory = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+root_directory = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Get the path to the configuration files
 mag_config_file = os.path.join(root_directory, 'config', 'mountain.yaml')
 # Get the path to the configuration files
@@ -38,14 +44,11 @@ mat2 = np.array([[1.0, 2.0, 3.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
 tp.setObsEigen(mat2)
 print("ObsEigen: ", tp.getObsEigen())
 
-
 trg = tp.getTRG()
 print("TRG: ", trg)
 
 trg.lockGraph()
 print("TRG locked")
-
-
 
 type = "global"
 nodes = trg.getGraph(type)
@@ -66,7 +69,6 @@ trg.unlockGraph()
 print("TRG unlocked")
 
 print("raw path: ", tp.getRawPath())
-
 
 while True:
     time.sleep(1)

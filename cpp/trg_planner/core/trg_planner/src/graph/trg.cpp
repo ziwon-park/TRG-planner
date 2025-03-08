@@ -541,8 +541,8 @@ bool TRG::planSafePath(Eigen::Vector2f&              start2d,
       std::reverse(out_path.begin(), out_path.end());
       path_length = sum_dist;
       avg_risk    = avg_weight;
-      print_success("Path found [dist: " + std::to_string(sum_dist) +
-                    ", risk: " + std::to_string(avg_weight) + "]");
+      // print_success("Path found [dist: " + std::to_string(sum_dist) +
+      //               ", risk: " + std::to_string(avg_weight) + "]");
       return true;
     }
 
