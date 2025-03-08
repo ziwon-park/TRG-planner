@@ -10,25 +10,31 @@ DEPS := gcc g++ build-essential libeigen3-dev python3-pip python3-dev cmake git
 
 # Display ASCII art at the beginning of the build process
 ascii_art:
+	@echo "============================================================"
 	@echo "████████╗██████╗  ██████╗                                   "
 	@echo "╚══██╔══╝██╔══██╗██╔════╝                                   "
-	@echo "   ██║   ██████╔╝██║  ███╗█████╗                             "
-	@echo "   ██║   ██╔══██╗██║   ██║╚════╝                             "
-	@echo "   ██║   ██║  ██║╚██████╔╝                                   "
+	@echo "   ██║   ██████╔╝██║  ███╗█████╗                            "
+	@echo "   ██║   ██╔══██╗██║   ██║╚════╝                            "
+	@echo "   ██║   ██║  ██║╚██████╔╝                                  "
 	@echo "   ╚═╝   ╚═╝  ╚═╝ ╚═════╝                                   "
-	@echo "                                                             "
+	@echo "                                                            "
 	@echo "██████╗ ██╗      █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗ "
 	@echo "██╔══██╗██║     ██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗"
 	@echo "██████╔╝██║     ███████║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝"
 	@echo "██╔═══╝ ██║     ██╔══██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗"
 	@echo "██║     ███████╗██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║"
 	@echo "╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝"
+	@echo "============================================================"
 
 # Install project dependencies
 deps:
 	@echo "Installing dependencies..."
 	@$(SUDO) apt update -y
 	@$(SUDO) apt install -y $(DEPS)
+
+# Clean the project
+clean_cpp:
+	@rm -rf $(BUILD_DIR)
 
 # Helper function to create build and run cmake
 build_cpp:
@@ -41,5 +47,5 @@ install_cpp:
 	@$(SUDO) cmake --install $(BUILD_DIR)
 
 # Full build and install
-cppinstall: build_cpp install_cpp ascii_art
+cppinstall: clean_cpp build_cpp install_cpp ascii_art
 	@echo "Enjoy Our TRG-planner!"
