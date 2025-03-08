@@ -86,8 +86,6 @@ void TRGPlanner::setParams(const std::string& config_path) {
 
   param_.graph_rate    = config["timer"]["graphRate"].as<float>(1.0f);
   param_.planning_rate = config["timer"]["planningRate"].as<float>(1.0f);
-  param_.publish_rate  = config["timer"]["publishRate"].as<float>(1.0f);
-  param_.debug_rate    = config["timer"]["debugRate"].as<float>(1.0f);
 
   param_.isPreMap   = config["map"]["isPrebuiltMap"].as<bool>(false);
   param_.preMapPath = config["map"]["prebuiltMapPath"].as<std::string>("");

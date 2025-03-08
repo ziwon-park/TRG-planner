@@ -20,11 +20,11 @@ ROS1Node::ROS1Node(const ros::NodeHandle &nh) : nh_(nh) {
   debug.path_info_  = nh_.advertise<ROS1Types::FloatArray>(topics_["pathInfo"], 1);
 
   TRGPlanner::init();
-  print("TRG Planner ROS1 initialized", param_.isVerbose);
+  print("TRG Planner ROS1 initialized", TRGPlanner::param_.isVerbose);
 
   //// Threads
   thd.publish = std::thread(&ROS1Node::publishTimer, this);
-  if (isDebug) {
+  if (param_.isDebug) {
     thd.debug = std::thread(&ROS1Node::debugTimer, this);
   }
 }
@@ -32,8 +32,10 @@ ROS1Node::ROS1Node(const ros::NodeHandle &nh) : nh_(nh) {
 ROS1Node::~ROS1Node() { thd.publish.join(); }
 
 void ROS1Node::getParams(const ros::NodeHandle &nh) {
-  nh.param("/ros1/isDebug", isDebug, true);
-  nh.param("/ros1/frameId", frame_id, std::string("map"));
+  nh.param("/ros1/isDebug", param_.isDebug, true);
+  nh.param("/ros1/frameId", param_.frame_id, std::string("map"));
+  nh.param("/ros1/publishRate", param_.publish_rate, 1.0f);
+  nh.param("/ros1/debugRate", param_.debug_rate, 1.0f);
 
   nh.param("/ros1/topic/input/egoPose",
            topics_["egoPose"],
@@ -84,54 +86,63 @@ void ROS1Node::getParams(const ros::NodeHandle &nh) {
 
 void ROS1Node::cbPose(const ROS1Types::Pose::ConstPtr &msg) {
   {
-    std::lock_guard<std::mutex> lock(mtx.odom);
-    state_.frame_id = msg->header.frame_id;
-    state_.pose3d =
+    std::lock_guard<std::mutex> lock(TRGPlanner::mtx.odom);
+    TRGPlanner::state_.frame_id = msg->header.frame_id;
+    TRGPlanner::state_.pose3d =
         Eigen::Vector3f(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
-    state_.pose2d                  = Eigen::Vector2f(msg->pose.position.x, msg->pose.position.y);
-    state_.quat                    = Eigen::Quaternionf(msg->pose.orientation.w,
-                                     msg->pose.orientation.x,
-                                     msg->pose.orientation.y,
-                                     msg->pose.orientation.z);
-    state_.T_B2M.block<3, 3>(0, 0) = state_.quat.toRotationMatrix();
-    state_.T_B2M.block<3, 1>(0, 3) = state_.pose3d;
-    flag_.poseIn                   = true;
+    TRGPlanner::state_.pose2d = Eigen::Vector2f(msg->pose.position.x, msg->pose.position.y);
+    TRGPlanner::state_.quat   = Eigen::Vector4f(msg->pose.orientation.w,
+                                              msg->pose.orientation.x,
+                                              msg->pose.orientation.y,
+                                              msg->pose.orientation.z);
+    Eigen::Quaternionf q(TRGPlanner::state_.quat(0),
+                         TRGPlanner::state_.quat(1),
+                         TRGPlanner::state_.quat(2),
+                         TRGPlanner::state_.quat(3));
+    TRGPlanner::state_.T_B2M.block<3, 3>(0, 0) = q.toRotationMatrix();
+    TRGPlanner::state_.T_B2M.block<3, 1>(0, 3) = TRGPlanner::state_.pose3d;
+    TRGPlanner::flag_.poseIn                   = true;
   }
 }
 
 void ROS1Node::cbOdom(const ROS1Types::Odom::ConstPtr &msg) {
   {
-    std::lock_guard<std::mutex> lock(mtx.odom);
-    state_.frame_id = msg->header.frame_id;
-    state_.pose3d   = Eigen::Vector3f(
+    std::lock_guard<std::mutex> lock(TRGPlanner::mtx.odom);
+    TRGPlanner::state_.frame_id = msg->header.frame_id;
+    TRGPlanner::state_.pose3d   = Eigen::Vector3f(
         msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
-    state_.pose2d = Eigen::Vector2f(msg->pose.pose.position.x, msg->pose.pose.position.y);
-    state_.quat   = Eigen::Quaternionf(msg->pose.pose.orientation.w,
-                                     msg->pose.pose.orientation.x,
-                                     msg->pose.pose.orientation.y,
-                                     msg->pose.pose.orientation.z);
-    state_.T_B2M.block<3, 3>(0, 0) = state_.quat.toRotationMatrix();
-    state_.T_B2M.block<3, 1>(0, 3) = state_.pose3d;
-    flag_.poseIn                   = true;
+    TRGPlanner::state_.pose2d =
+        Eigen::Vector2f(msg->pose.pose.position.x, msg->pose.pose.position.y);
+    TRGPlanner::state_.quat = Eigen::Vector4f(msg->pose.pose.orientation.w,
+                                              msg->pose.pose.orientation.x,
+                                              msg->pose.pose.orientation.y,
+                                              msg->pose.pose.orientation.z);
+    Eigen::Quaternionf q(TRGPlanner::state_.quat(0),
+                         TRGPlanner::state_.quat(1),
+                         TRGPlanner::state_.quat(2),
+                         TRGPlanner::state_.quat(3));
+    TRGPlanner::state_.T_B2M.block<3, 3>(0, 0) = q.toRotationMatrix();
+    TRGPlanner::state_.T_B2M.block<3, 1>(0, 3) = TRGPlanner::state_.pose3d;
+    TRGPlanner::flag_.poseIn                   = true;
   }
 }
 
 void ROS1Node::cbCloud(const ROS1Types::PointCloud::ConstPtr &msg) {
-  if (!flag_.poseIn) {
+  if (!TRGPlanner::flag_.poseIn) {
     return;
   }
   {
-    std::lock_guard<std::mutex>      lock(mtx.obs);
+    std::lock_guard<std::mutex>      lock(TRGPlanner::mtx.obs);
     pcl::PointCloud<PtsDefault>::Ptr cloud_in(new pcl::PointCloud<PtsDefault>());
     pcl::fromROSMsg(*msg, *cloud_in);
-    if (msg->header.frame_id == state_.frame_id) {
-      pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, Eigen::Matrix4f::Identity());
+    if (msg->header.frame_id == TRGPlanner::state_.frame_id) {
+      pcl::transformPointCloud(*cloud_in, *TRGPlanner::cs_.obsPtr, Eigen::Matrix4f::Identity());
     } else {
       try {
         tf_cache.listener.waitForTransform(
-            state_.frame_id, msg->header.frame_id, ros::Time(0), ros::Duration(0.01));
+            TRGPlanner::state_.frame_id, msg->header.frame_id, ros::Time(0), ros::Duration(0.01));
         tf_cache.listener.lookupTransform(
-            state_.frame_id, msg->header.frame_id, ros::Time(0), tf_cache.tf);
+            TRGPlanner::state_.frame_id, msg->header.frame_id, ros::Time(0), tf_cache.tf);
         Eigen::Matrix4f T_S2M =
             Eigen::Matrix4f::Identity();  // transform from sensor frame to map frame
         T_S2M.block<3, 3>(0, 0) = Eigen::Quaternionf(tf_cache.tf.getRotation().w(),
@@ -141,21 +152,23 @@ void ROS1Node::cbCloud(const ROS1Types::PointCloud::ConstPtr &msg) {
                                       .toRotationMatrix();
         T_S2M.block<3, 1>(0, 3) = Eigen::Vector3f(
             tf_cache.tf.getOrigin().x(), tf_cache.tf.getOrigin().y(), tf_cache.tf.getOrigin().z());
-        pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, T_S2M);
+        pcl::transformPointCloud(*cloud_in, *TRGPlanner::cs_.obsPtr, T_S2M);
       } catch (tf::TransformException &ex) {
-        pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, state_.T_B2M);  // transform to map frame
+        pcl::transformPointCloud(*cloud_in,
+                                 *TRGPlanner::cs_.obsPtr,
+                                 TRGPlanner::state_.T_B2M);  // transform to map frame
       }
     }
-    flag_.obsIn = true;
+    TRGPlanner::flag_.obsIn = true;
   }
 }
 
 void ROS1Node::cbGrid(const ROS1Types::GridMap::ConstPtr &msg) {
-  if (!flag_.poseIn) {
+  if (!TRGPlanner::flag_.poseIn) {
     return;
   }
   {
-    std::lock_guard<std::mutex> lock(mtx.obs);
+    std::lock_guard<std::mutex> lock(TRGPlanner::mtx.obs);
     grid_map::GridMap           gridMap_in;
     grid_map::GridMapRosConverter::fromMessage(*msg, gridMap_in);
 
@@ -172,14 +185,16 @@ void ROS1Node::cbGrid(const ROS1Types::GridMap::ConstPtr &msg) {
       }
       cloud_in->push_back(pt);
     }
-    if (msg->info.header.frame_id == state_.frame_id) {
-      pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, Eigen::Matrix4f::Identity());
+    if (msg->info.header.frame_id == TRGPlanner::state_.frame_id) {
+      pcl::transformPointCloud(*cloud_in, *TRGPlanner::cs_.obsPtr, Eigen::Matrix4f::Identity());
     } else {
       try {
-        tf_cache.listener.waitForTransform(
-            state_.frame_id, msg->info.header.frame_id, ros::Time(0), ros::Duration(0.01));
+        tf_cache.listener.waitForTransform(TRGPlanner::state_.frame_id,
+                                           msg->info.header.frame_id,
+                                           ros::Time(0),
+                                           ros::Duration(0.01));
         tf_cache.listener.lookupTransform(
-            state_.frame_id, msg->info.header.frame_id, ros::Time(0), tf_cache.tf);
+            TRGPlanner::state_.frame_id, msg->info.header.frame_id, ros::Time(0), tf_cache.tf);
         Eigen::Matrix4f T_S2M =
             Eigen::Matrix4f::Identity();  // transform from sensor frame to map frame
         T_S2M.block<3, 3>(0, 0) = Eigen::Quaternionf(tf_cache.tf.getRotation().w(),
@@ -189,31 +204,33 @@ void ROS1Node::cbGrid(const ROS1Types::GridMap::ConstPtr &msg) {
                                       .toRotationMatrix();
         T_S2M.block<3, 1>(0, 3) = Eigen::Vector3f(
             tf_cache.tf.getOrigin().x(), tf_cache.tf.getOrigin().y(), tf_cache.tf.getOrigin().z());
-        pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, T_S2M);
+        pcl::transformPointCloud(*cloud_in, *TRGPlanner::cs_.obsPtr, T_S2M);
       } catch (tf::TransformException &ex) {
-        pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, state_.T_B2M);  // transform to map frame
+        pcl::transformPointCloud(*cloud_in,
+                                 *TRGPlanner::cs_.obsPtr,
+                                 TRGPlanner::state_.T_B2M);  // transform to map frame
       }
     }
-    flag_.obsIn = true;
+    TRGPlanner::flag_.obsIn = true;
   }
 }
 
 void ROS1Node::cbGoal(const ROS1Types::Pose::ConstPtr &msg) {
-  if (!flag_.graphInit) {
+  if (!TRGPlanner::flag_.graphInit) {
     print_error("Graph is not initialized");
     return;
   }
   {
-    std::lock_guard<std::mutex> lock(mtx.goal);
-    goal_state_.pose =
+    std::lock_guard<std::mutex> lock(TRGPlanner::mtx.goal);
+    TRGPlanner::goal_state_.pose =
         Eigen::Vector3f(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
-    goal_state_.quat = Eigen::Quaternionf(msg->pose.orientation.w,
-                                          msg->pose.orientation.x,
-                                          msg->pose.orientation.y,
-                                          msg->pose.orientation.z);
-    goal_state_.init = true;
-    flag_.goalIn     = true;
-    print("Goal received", param_.isVerbose);
+    TRGPlanner::goal_state_.quat = Eigen::Vector4f(msg->pose.orientation.w,
+                                                   msg->pose.orientation.x,
+                                                   msg->pose.orientation.y,
+                                                   msg->pose.orientation.z);
+    TRGPlanner::goal_state_.init = true;
+    TRGPlanner::flag_.goalIn     = true;
+    print("Goal received", TRGPlanner::param_.isVerbose);
   }
 }
 
@@ -222,29 +239,29 @@ void ROS1Node::publishTimer() {
     auto start_loop = tic();
     std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 
-    if (param_.isPreMap) {
-      publishCloud(frame_id, cs_.preMapPtr, pub.pre_map_);
+    if (TRGPlanner::param_.isPreMap) {
+      publishCloud(param_.frame_id, TRGPlanner::cs_.preMapPtr, pub.pre_map_);
     }
-    if (flag_.pathFound) {
-      flag_.pathFound = false;
-      publishPath(frame_id, path_.smooth, pub.path_);
+    if (TRGPlanner::flag_.pathFound) {
+      TRGPlanner::flag_.pathFound = false;
+      publishPath(param_.frame_id, TRGPlanner::path_.smooth, pub.path_);
       ROS1Types::FloatArray path_info_msg;
-      path_info_msg.data.push_back(path_.direct_dist);
-      path_info_msg.data.push_back(path_.raw_path_length);
-      path_info_msg.data.push_back(path_.smooth_path_length);
-      path_info_msg.data.push_back(path_.planning_time);
-      path_info_msg.data.push_back(path_.avg_risk);
+      path_info_msg.data.push_back(TRGPlanner::path_.direct_dist);
+      path_info_msg.data.push_back(TRGPlanner::path_.raw_path_length);
+      path_info_msg.data.push_back(TRGPlanner::path_.smooth_path_length);
+      path_info_msg.data.push_back(TRGPlanner::path_.planning_time);
+      path_info_msg.data.push_back(TRGPlanner::path_.avg_risk);
       debug.path_info_.publish(path_info_msg);
     }
-    if (goal_state_.init) {
+    if (TRGPlanner::goal_state_.init) {
       PointCloudPtr goal_cloud(new pcl::PointCloud<PtsDefault>());
       PtsDefault    pt;
-      pt.x = goal_state_.pose.x();
-      pt.y = goal_state_.pose.y();
-      pt.z = goal_state_.pose.z();
+      pt.x = TRGPlanner::goal_state_.pose.x();
+      pt.y = TRGPlanner::goal_state_.pose.y();
+      pt.z = TRGPlanner::goal_state_.pose.z();
       goal_cloud->push_back(pt);
-      publishCloud(frame_id, goal_cloud, pub.goal_);
-      goal_state_.init = false;
+      publishCloud(param_.frame_id, goal_cloud, pub.goal_);
+      TRGPlanner::goal_state_.init = false;
     }
     float loop_time   = toc(start_loop, "ms");
     int   remain_time = 1000 / param_.publish_rate - loop_time;
@@ -260,14 +277,14 @@ void ROS1Node::debugTimer() {
     auto start_loop = tic();
     std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 
-    if (flag_.graphInit) {
+    if (TRGPlanner::flag_.graphInit) {
       vizGraph("global", debug.global_trg_);
     }
-    if (flag_.graphInit && param_.isUpdate) {
+    if (TRGPlanner::flag_.graphInit && TRGPlanner::param_.isUpdate) {
       vizGraph("local", debug.local_trg_);
     }
-    if (flag_.obsIn) {
-      publishCloud(frame_id, cs_.obsPtr, debug.obs_map_);
+    if (TRGPlanner::flag_.obsIn) {
+      publishCloud(param_.frame_id, TRGPlanner::cs_.obsPtr, debug.obs_map_);
     }
     float loop_time   = toc(start_loop, "ms");
     int   remain_time = 1000 / param_.debug_rate - loop_time;
@@ -285,13 +302,12 @@ void ROS1Node::vizGraph(std::string type, ros::Publisher &pub) {
   delete_marker.action = ROS1Types::Marker::DELETEALL;
   graph_marker.markers.push_back(delete_marker);
 
-  std::unordered_map<int, TRG::Node *> nodes;
-  trg_->lockGraph();
-  trg_->getGraph(nodes, type);
+  TRGPlanner::trg_->lockGraph();
+  std::unordered_map<int, TRG::Node *> nodes = TRGPlanner::trg_->getGraph(type);
 
   if (!nodes.empty()) {
     ROS1Types::Marker node_marker;
-    node_marker.header.frame_id = frame_id;
+    node_marker.header.frame_id = param_.frame_id;
     node_marker.header.stamp    = ros::Time::now();
     node_marker.type            = ROS1Types::Marker::SPHERE_LIST;
     node_marker.id              = 0;
@@ -300,7 +316,7 @@ void ROS1Node::vizGraph(std::string type, ros::Publisher &pub) {
     node_marker.pose.orientation.w                                  = 1.0;
 
     ROS1Types::Marker edge_marker;
-    edge_marker.header.frame_id = frame_id;
+    edge_marker.header.frame_id = param_.frame_id;
     edge_marker.header.stamp    = ros::Time::now();
     edge_marker.type            = ROS1Types::Marker::LINE_LIST;
     edge_marker.id              = 1;
@@ -362,5 +378,5 @@ void ROS1Node::vizGraph(std::string type, ros::Publisher &pub) {
     graph_marker.markers.push_back(edge_marker);
   }
   pub.publish(graph_marker);
-  trg_->unlockGraph();
+  TRGPlanner::trg_->unlockGraph();
 }

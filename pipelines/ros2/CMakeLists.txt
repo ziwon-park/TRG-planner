@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16...3.24)
 cmake_policy(SET CMP0074 NEW)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -20,12 +20,12 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/ros2/include
+    ${CMAKE_CURRENT_LIST_DIR}/include
 )
 
 add_executable(trg_ros2_node
-    ${CMAKE_SOURCE_DIR}/ros2/src/main.cpp
-    ${CMAKE_SOURCE_DIR}/ros2/src/ros2_node.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ros2_node.cpp
 )
 ament_target_dependencies(trg_ros2_node
     rclcpp
@@ -48,7 +48,6 @@ install(TARGETS
 install(DIRECTORY
     launch
     config
-    # ${CMAKE_SOURCE_DIR}/configs
     DESTINATION share/${PROJECT_NAME}
 )
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16...3.24)
 project(trg_planner_ros VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -11,7 +11,7 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif ()
 
 # set package directory path
-set(TRG_ROS_DIR ${CMAKE_SOURCE_DIR})
+set(TRG_ROS_DIR ${CMAKE_CURRENT_LIST_DIR})
 add_definitions(-DTRG_ROS_DIR="${TRG_ROS_DIR}")
 message(STATUS "TRG_ROS_DIR: ${TRG_ROS_DIR}")
 

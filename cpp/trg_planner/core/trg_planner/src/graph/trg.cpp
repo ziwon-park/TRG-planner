@@ -686,9 +686,9 @@ bool TRG::isFrontier(Eigen::Vector2f& pos) {
   return false;
 }
 
-void TRG::getGraph(std::unordered_map<int, Node*>& out_nodes, std::string type) {
+std::unordered_map<int, TRG::Node*> TRG::getGraph(std::string type) {
   trgStruct& graph = *trgMap_[type];
-  out_nodes        = graph.nodes;
+  return graph.nodes;
 }
 
 void TRG::lockGraph() { mtx.graph.lock(); }

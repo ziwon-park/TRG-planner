@@ -3,8 +3,6 @@ isVerbose:                    false
 timer:
   graphRate:                5.0
   planningRate:             10.0
-  publishRate:              10.0
-  debugRate:                1.0
 
 map:
   isPrebuiltMap:            true

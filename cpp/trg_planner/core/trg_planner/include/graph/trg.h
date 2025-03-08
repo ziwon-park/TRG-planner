@@ -84,9 +84,9 @@ class TRG {
   bool isCollision(Eigen::Vector2f& pos2d, std::string type, float threshold);
   bool isFrontier(Eigen::Vector2f& pos2d);
 
-  void getGraph(std::unordered_map<int, Node*>& out_nodes, std::string type);
-  void lockGraph();
-  void unlockGraph();
+  std::unordered_map<int, Node*> getGraph(std::string type);
+  void                           lockGraph();
+  void                           unlockGraph();
 
  protected:
   struct trgStruct {

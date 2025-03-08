@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16...3.24)
 project(trg_planner_example VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -10,7 +10,7 @@ endif ()
 include(FetchContent)
 
 # set package directory path
-set(TRG_EXAMPLE_DIR ${CMAKE_SOURCE_DIR})
+set(TRG_EXAMPLE_DIR ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "TRG_EXAMPLE_DIR: ${TRG_EXAMPLE_DIR}")
 add_definitions(-DTRG_EXAMPLE_DIR="${TRG_EXAMPLE_DIR}")
 
@@ -21,11 +21,11 @@ find_package(yaml-cpp REQUIRED)
 find_package(trg_planner REQUIRED)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_LIST_DIR}/include
 )
 
 add_executable(run_trg_planner
-    ${CMAKE_SOURCE_DIR}/src/run_trg_planner.cc
+    ${CMAKE_CURRENT_LIST_DIR}/src/run_trg_planner.cc
 )
 target_include_directories(run_trg_planner
     PUBLIC

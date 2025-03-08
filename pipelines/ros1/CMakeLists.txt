@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16...3.24)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,13 +21,13 @@ find_package(trg_planner REQUIRED)
 catkin_package()
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/ros1/include
+    ${CMAKE_CURRENT_LIST_DIR}/include
     ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(trg_ros1_node
-    ${CMAKE_SOURCE_DIR}/ros1/src/main.cpp
-    ${CMAKE_SOURCE_DIR}/ros1/src/ros1_node.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ros1_node.cpp
 )
 target_link_libraries(trg_ros1_node
     ${catkin_LIBRARIES}

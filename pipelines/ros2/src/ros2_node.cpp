@@ -27,11 +27,13 @@ ROS2Node::ROS2Node(const rclcpp::Node::SharedPtr &node) : n_(node) {
   debug.path_info_  = n_->create_publisher<ROS2Types::FloatArray>(topics_["pathInfo"], 1);
 
   TRGPlanner::init();
-  print("TRG Planner ROS2 initialized", param_.isVerbose);
+  print("TRG Planner ROS2 initialized", TRGPlanner::param_.isVerbose);
 
   //// Threads
   thd.publish = std::thread(&ROS2Node::publishTimer, this);
-  thd.debug   = std::thread(&ROS2Node::debugTimer, this);
+  if (param_.isDebug) {
+    thd.debug = std::thread(&ROS2Node::debugTimer, this);
+  }
 }
 
 ROS2Node::~ROS2Node() { thd.publish.join(); }
@@ -39,6 +41,8 @@ ROS2Node::~ROS2Node() { thd.publish.join(); }
 void ROS2Node::getParams(const rclcpp::Node::SharedPtr &n_) {
   n_->declare_parameter<bool>("ros2.isDebug", true);
   n_->declare_parameter<std::string>("ros2.frameId", "map");
+  n_->declare_parameter<float>("ros2.publishRate", 1.0f);
+  n_->declare_parameter<float>("ros2.debugRate", 1.0f);
 
   n_->declare_parameter<std::string>("ros2.topic.input.egoPose",
                                      "/trg_ros2_node/input/default_ego_pose");
@@ -64,8 +68,10 @@ void ROS2Node::getParams(const rclcpp::Node::SharedPtr &n_) {
   n_->declare_parameter<std::string>("mapConfig", "default");
 
   //// Get parameters
-  n_->get_parameter("ros2.isDebug", isDebug);
-  n_->get_parameter("ros2.frameId", frame_id);
+  n_->get_parameter("ros2.isDebug", param_.isDebug);
+  n_->get_parameter("ros2.frameId", param_.frame_id);
+  n_->get_parameter("ros2.publishRate", param_.publish_rate);
+  n_->get_parameter("ros2.debugRate", param_.debug_rate);
 
   n_->get_parameter("ros2.topic.input.egoPose", topics_["egoPose"]);
   n_->get_parameter("ros2.topic.input.egoOdom", topics_["egoOdom"]);
@@ -92,52 +98,61 @@ void ROS2Node::getParams(const rclcpp::Node::SharedPtr &n_) {
 
 void ROS2Node::cbPose(const std::shared_ptr<const ROS2Types::Pose> &msg) {
   {
-    std::lock_guard<std::mutex> lock(mtx.odom);
-    state_.frame_id = msg->header.frame_id;
-    state_.pose3d =
+    std::lock_guard<std::mutex> lock(TRGPlanner::mtx.odom);
+    TRGPlanner::state_.frame_id = msg->header.frame_id;
+    TRGPlanner::state_.pose3d =
         Eigen::Vector3f(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
-    state_.pose2d                  = Eigen::Vector2f(msg->pose.position.x, msg->pose.position.y);
-    state_.quat                    = Eigen::Quaternionf(msg->pose.orientation.w,
-                                     msg->pose.orientation.x,
-                                     msg->pose.orientation.y,
-                                     msg->pose.orientation.z);
-    state_.T_B2M.block<3, 3>(0, 0) = state_.quat.toRotationMatrix();
-    state_.T_B2M.block<3, 1>(0, 3) = state_.pose3d;
-    flag_.poseIn                   = true;
+    TRGPlanner::state_.pose2d = Eigen::Vector2f(msg->pose.position.x, msg->pose.position.y);
+    TRGPlanner::state_.quat   = Eigen::Vector4f(msg->pose.orientation.w,
+                                              msg->pose.orientation.x,
+                                              msg->pose.orientation.y,
+                                              msg->pose.orientation.z);
+    Eigen::Quaternionf q(TRGPlanner::state_.quat(0),
+                         TRGPlanner::state_.quat(1),
+                         TRGPlanner::state_.quat(2),
+                         TRGPlanner::state_.quat(3));
+    TRGPlanner::state_.T_B2M.block<3, 3>(0, 0) = q.toRotationMatrix();
+    TRGPlanner::state_.T_B2M.block<3, 1>(0, 3) = TRGPlanner::state_.pose3d;
+    TRGPlanner::flag_.poseIn                   = true;
   }
 }
 
 void ROS2Node::cbOdom(const std::shared_ptr<const ROS2Types::Odom> &msg) {
   {
     std::lock_guard<std::mutex> lock(mtx.odom);
-    state_.frame_id = msg->header.frame_id;
-    state_.pose3d   = Eigen::Vector3f(
+    TRGPlanner::state_.frame_id = msg->header.frame_id;
+    TRGPlanner::state_.pose3d   = Eigen::Vector3f(
         msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
-    state_.pose2d = Eigen::Vector2f(msg->pose.pose.position.x, msg->pose.pose.position.y);
-    state_.quat   = Eigen::Quaternionf(msg->pose.pose.orientation.w,
-                                     msg->pose.pose.orientation.x,
-                                     msg->pose.pose.orientation.y,
-                                     msg->pose.pose.orientation.z);
-    state_.T_B2M.block<3, 3>(0, 0) = state_.quat.toRotationMatrix();
-    state_.T_B2M.block<3, 1>(0, 3) = state_.pose3d;
-    flag_.poseIn                   = true;
+    TRGPlanner::state_.pose2d =
+        Eigen::Vector2f(msg->pose.pose.position.x, msg->pose.pose.position.y);
+    TRGPlanner::state_.quat = Eigen::Vector4f(msg->pose.pose.orientation.w,
+                                              msg->pose.pose.orientation.x,
+                                              msg->pose.pose.orientation.y,
+                                              msg->pose.pose.orientation.z);
+    Eigen::Quaternionf q(TRGPlanner::state_.quat(0),
+                         TRGPlanner::state_.quat(1),
+                         TRGPlanner::state_.quat(2),
+                         TRGPlanner::state_.quat(3));
+    TRGPlanner::state_.T_B2M.block<3, 3>(0, 0) = q.toRotationMatrix();
+    TRGPlanner::state_.T_B2M.block<3, 1>(0, 3) = TRGPlanner::state_.pose3d;
+    TRGPlanner::flag_.poseIn                   = true;
   }
 }
 
 void ROS2Node::cbCloud(const std::shared_ptr<const ROS2Types::PointCloud> &msg) {
-  if (!flag_.poseIn) {
+  if (!TRGPlanner::flag_.poseIn) {
     return;
   }
   {
-    std::lock_guard<std::mutex>      lock(mtx.obs);
+    std::lock_guard<std::mutex>      lock(TRGPlanner::mtx.obs);
     pcl::PointCloud<PtsDefault>::Ptr cloud_in(new pcl::PointCloud<PtsDefault>());
     pcl::fromROSMsg(*msg, *cloud_in);
-    if (msg->header.frame_id == state_.frame_id) {
-      pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, Eigen::Matrix4f::Identity());
+    if (msg->header.frame_id == TRGPlanner::state_.frame_id) {
+      pcl::transformPointCloud(*cloud_in, *TRGPlanner::cs_.obsPtr, Eigen::Matrix4f::Identity());
     } else {
       try {
         tf_cache.tfStamped = tf_cache.tfBuffer->lookupTransform(
-            state_.frame_id, msg->header.frame_id, rclcpp::Time(0));
+            TRGPlanner::state_.frame_id, msg->header.frame_id, rclcpp::Time(0));
         tf_cache.isTFCached = true;
       } catch (tf2::TransformException &ex) {
         print_error(ex.what());
@@ -154,28 +169,28 @@ void ROS2Node::cbCloud(const std::shared_ptr<const ROS2Types::PointCloud> &msg) 
       T_S2M.block<3, 1>(0, 3) = Eigen::Vector3f(tf_cache.tfStamped.transform.translation.x,
                                                 tf_cache.tfStamped.transform.translation.y,
                                                 tf_cache.tfStamped.transform.translation.z);
-      pcl::transformPointCloud(*cloud_in, *cs_.obsPtr, T_S2M);
+      pcl::transformPointCloud(*cloud_in, *TRGPlanner::cs_.obsPtr, T_S2M);
     }
-    flag_.obsIn = true;
+    TRGPlanner::flag_.obsIn = true;
   }
 }
 
 void ROS2Node::cbGoal(const std::shared_ptr<const ROS2Types::Pose> &msg) {
-  if (!flag_.graphInit) {
+  if (!TRGPlanner::flag_.graphInit) {
     print_error("Graph is not initialized");
     return;
   }
   {
-    std::lock_guard<std::mutex> lock(mtx.goal);
-    goal_state_.pose =
+    std::lock_guard<std::mutex> lock(TRGPlanner::mtx.goal);
+    TRGPlanner::goal_state_.pose =
         Eigen::Vector3f(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
-    goal_state_.quat = Eigen::Quaternionf(msg->pose.orientation.w,
-                                          msg->pose.orientation.x,
-                                          msg->pose.orientation.y,
-                                          msg->pose.orientation.z);
-    goal_state_.init = true;
-    flag_.goalIn     = true;
-    print("Goal received", param_.isVerbose);
+    TRGPlanner::goal_state_.quat = Eigen::Vector4f(msg->pose.orientation.w,
+                                                   msg->pose.orientation.x,
+                                                   msg->pose.orientation.y,
+                                                   msg->pose.orientation.z);
+    TRGPlanner::goal_state_.init = true;
+    TRGPlanner::flag_.goalIn     = true;
+    print("Goal received", TRGPlanner::param_.isVerbose);
   }
 }
 
@@ -184,29 +199,29 @@ void ROS2Node::publishTimer() {
     auto start_loop = tic();
     std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 
-    if (param_.isPreMap) {
-      publishCloud(n_, frame_id, cs_.preMapPtr, pub.pre_map_);
+    if (TRGPlanner::param_.isPreMap) {
+      publishCloud(n_, TRGPlanner::state_.frame_id, TRGPlanner::cs_.preMapPtr, pub.pre_map_);
     }
-    if (flag_.pathFound) {
-      flag_.pathFound = false;
-      publishPath(n_, frame_id, path_.smooth, pub.path_);
+    if (TRGPlanner::flag_.pathFound) {
+      TRGPlanner::flag_.pathFound = false;
+      publishPath(n_, TRGPlanner::state_.frame_id, TRGPlanner::path_.smooth, pub.path_);
       ROS2Types::FloatArray path_info_msg;
-      path_info_msg.data.push_back(path_.direct_dist);
-      path_info_msg.data.push_back(path_.raw_path_length);
-      path_info_msg.data.push_back(path_.smooth_path_length);
-      path_info_msg.data.push_back(path_.planning_time);
-      path_info_msg.data.push_back(path_.avg_risk);
+      path_info_msg.data.push_back(TRGPlanner::path_.direct_dist);
+      path_info_msg.data.push_back(TRGPlanner::path_.raw_path_length);
+      path_info_msg.data.push_back(TRGPlanner::path_.smooth_path_length);
+      path_info_msg.data.push_back(TRGPlanner::path_.planning_time);
+      path_info_msg.data.push_back(TRGPlanner::path_.avg_risk);
       debug.path_info_->publish(path_info_msg);
     }
-    if (goal_state_.init) {
+    if (TRGPlanner::goal_state_.init) {
       PointCloudPtr goal_cloud(new pcl::PointCloud<PtsDefault>());
       PtsDefault    pt;
-      pt.x = goal_state_.pose.x();
-      pt.y = goal_state_.pose.y();
-      pt.z = goal_state_.pose.z();
+      pt.x = TRGPlanner::goal_state_.pose.x();
+      pt.y = TRGPlanner::goal_state_.pose.y();
+      pt.z = TRGPlanner::goal_state_.pose.z();
       goal_cloud->push_back(pt);
-      publishCloud(n_, frame_id, goal_cloud, pub.goal_);
-      goal_state_.init = false;
+      publishCloud(n_, TRGPlanner::state_.frame_id, goal_cloud, pub.goal_);
+      TRGPlanner::goal_state_.init = false;
     }
     float loop_time   = toc(start_loop, "ms");
     int   remain_time = 1000 / param_.publish_rate - loop_time;
@@ -221,14 +236,14 @@ void ROS2Node::debugTimer() {
   while (is_running.load()) {
     auto start_loop = tic();
     std::this_thread::sleep_for(std::chrono::nanoseconds(1));
-    if (flag_.graphInit) {
+    if (TRGPlanner::flag_.graphInit) {
       vizGraph("global", debug.global_trg_);
     }
-    if (flag_.graphInit && param_.isUpdate) {
+    if (TRGPlanner::flag_.graphInit && TRGPlanner::param_.isUpdate) {
       vizGraph("local", debug.local_trg_);
     }
-    if (flag_.obsIn) {
-      publishCloud(n_, frame_id, cs_.obsPtr, debug.obs_map_);
+    if (TRGPlanner::flag_.obsIn) {
+      publishCloud(n_, TRGPlanner::state_.frame_id, TRGPlanner::cs_.obsPtr, debug.obs_map_);
     }
     float loop_time   = toc(start_loop, "ms");
     int   remain_time = 1000 / param_.debug_rate - loop_time;
@@ -247,13 +262,12 @@ void ROS2Node::vizGraph(std::string                                          typ
   delete_marker.action = ROS2Types::Marker::DELETEALL;
   graph_marker.markers.push_back(delete_marker);
 
-  std::unordered_map<int, TRG::Node *> nodes;
-  trg_->lockGraph();
-  trg_->getGraph(nodes, type);
+  TRGPlanner::trg_->lockGraph();
+  std::unordered_map<int, TRG::Node *> nodes = TRGPlanner::trg_->getGraph(type);
 
   if (!nodes.empty()) {
     ROS2Types::Marker n_marker;
-    n_marker.header.frame_id = frame_id;
+    n_marker.header.frame_id = param_.frame_id;
     n_marker.header.stamp    = n_->now();
     n_marker.type            = ROS2Types::Marker::SPHERE_LIST;
     n_marker.id              = 0;
@@ -262,7 +276,7 @@ void ROS2Node::vizGraph(std::string                                          typ
     n_marker.pose.orientation.w                            = 1.0;
 
     ROS2Types::Marker edge_marker;
-    edge_marker.header.frame_id = frame_id;
+    edge_marker.header.frame_id = param_.frame_id;
     edge_marker.header.stamp    = n_->now();
     edge_marker.type            = ROS2Types::Marker::LINE_LIST;
     edge_marker.id              = 1;
@@ -324,5 +338,5 @@ void ROS2Node::vizGraph(std::string                                          typ
     graph_marker.markers.push_back(edge_marker);
   }
   pub->publish(graph_marker);
-  trg_->unlockGraph();
+  TRGPlanner::trg_->unlockGraph();
 }

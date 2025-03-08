@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16...3.24)
 project(trg_planner VERSION 1.0.0)
 
 include(cmake/CompilerOptions.cmake)
@@ -15,7 +15,7 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif ()
 
 # set package directory path
-set(TRG_DIR ${CMAKE_SOURCE_DIR})
+set(TRG_DIR ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "TRG_DIR: ${TRG_DIR}")
 add_definitions(-DTRG_DIR="${TRG_DIR}")
 
@@ -27,9 +27,9 @@ find_package(yaml-cpp REQUIRED)
 # Planner class library
 set(TARGET_NAME trg_planner_core)
 add_library(${TARGET_NAME} STATIC
-    ${CMAKE_SOURCE_DIR}/core/trg_planner/src/kdtree/kdtree.c
-    ${CMAKE_SOURCE_DIR}/core/trg_planner/src/planner/trg_planner.cpp
-    ${CMAKE_SOURCE_DIR}/core/trg_planner/src/graph/trg.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner/src/kdtree/kdtree.c
+    ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner/src/planner/trg_planner.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner/src/graph/trg.cpp
 )
 
 target_link_libraries(${TARGET_NAME}
@@ -41,7 +41,7 @@ target_link_libraries(${TARGET_NAME}
 
 target_include_directories(${TARGET_NAME}
     PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/
+    ${CMAKE_CURRENT_LIST_DIR}/core/
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -62,7 +62,7 @@ install(EXPORT ${PROJECT_NAME}-export
     FILE ${PROJECT_NAME}Targets.cmake
 )
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/core/trg_planner DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner DESTINATION include)
 
 export(TARGETS ${MYPROJECT_EXPORTED_TARGETS} FILE ${PROJECT_NAME}-exports.cmake)
 

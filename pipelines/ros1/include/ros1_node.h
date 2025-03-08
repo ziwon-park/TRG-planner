@@ -46,9 +46,21 @@ class ROS1Node : public TRGPlanner {
   } debug;
 
   //// Parameters
-  bool                                         isDebug;
-  std::string                                  frame_id;
+  struct Parameters {
+    bool        isDebug;
+    std::string frame_id;
+    float       publish_rate;
+    float       debug_rate;
+  } param_;
+
   std::unordered_map<std::string, std::string> topics_;
+
+  //// Threads
+  struct Threads {
+    std::thread                            publish;
+    std::thread                            debug;
+    std::unordered_map<std::string, float> hz;
+  } thd;
 
   //// TF
   struct TFCache {

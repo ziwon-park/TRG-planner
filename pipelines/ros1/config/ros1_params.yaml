@@ -1,6 +1,8 @@
 ros1:
-  frameId:                    "map"
   isDebug:                    true
+  frameId:                    "map"
+  publishRate:                10.0
+  debugRate:                  1.0
   topic:
     input:
       egoPose:                "/trg/input/default_pose"

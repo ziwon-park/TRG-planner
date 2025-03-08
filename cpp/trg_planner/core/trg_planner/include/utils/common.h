@@ -59,6 +59,7 @@ inline void              signal_handler(int signal) {
   exit(signal);
 }
 
+/// Timer
 inline std::chrono::high_resolution_clock::time_point tic() {
   return std::chrono::high_resolution_clock::now();
 }
@@ -84,6 +85,7 @@ inline float toc(std::chrono::high_resolution_clock::time_point start_time,
   return elapsed_time;
 }
 
+/// Print
 inline void print(const std::string &msg, bool isVerbose = true) {
   if (isVerbose) {
     std::cout << msg << std::endl;
@@ -113,6 +115,28 @@ inline std::string to_string_float(float num, int decimal = 2) {
   ss << std::fixed << std::setprecision(decimal)
      << std::round(num * std::pow(10, decimal)) / std::pow(10, decimal);
   return ss.str();
+}
+
+/// Convert
+inline void EigenToPointCloud(const Eigen::MatrixXf &mat, PointCloudPtr &cloud) {
+  cloud->clear();
+  for (int i = 0; i < mat.rows(); ++i) {
+    PtsDefault pt;
+    pt.x = mat(i, 0);
+    pt.y = mat(i, 1);
+    pt.z = mat(i, 2);
+    cloud->push_back(pt);
+  }
+}
+
+inline Eigen::MatrixXf PointCloudToEigen(const PointCloudPtr &cloud) {
+  Eigen::MatrixXf mat(cloud->size(), 3);
+  int             i = 0;
+  for (const auto &pt : cloud->points) {
+    mat.row(i) << pt.x, pt.y, pt.z;
+    i++;
+  }
+  return mat;
 }
 
 #endif  // COMMON_H_
