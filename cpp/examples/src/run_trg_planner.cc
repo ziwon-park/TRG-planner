@@ -5,11 +5,15 @@
 int main(int argc, char **argv) {
   signal(SIGINT, signal_handler);  // to exit program when ctrl+c
 
-  std::string map_config_path = std::string(TRG_DIR) + "/configs/map/default.yaml";
+  std::string map_config_path = std::string(TRG_EXAMPLE_DIR) + "/../../config/default.yaml";
   TRGPlanner  trg_planner;
 
   if (argc > 1) {
-    map_config_path = std::string(TRG_DIR) + "/configs/map/" + argv[1] + ".yaml";
+    map_config_path = std::string(TRG_EXAMPLE_DIR) + "/../../config/" + argv[1] + ".yaml";
+    if (!std::filesystem::exists(map_config_path)) {
+      print_error("Map config file does not exist: " + map_config_path);
+      exit(1);
+    }
   } else {
     print_error("Please provide a map config file");
     exit(1);
