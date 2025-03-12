@@ -23,7 +23,7 @@ class PosePublisher(Node):
         self.odom_pub = self.create_publisher(Odometry, 'fake_robot_pose', 10)
         self.goal_pub = self.create_publisher(PoseStamped, 'fake_goal', 10)
 
-        self.frame_id = 'world'
+        self.frame_id = 'map'
 
         # Subscriber
         self.create_subscription(PoseWithCovarianceStamped, 'initialpose',
@@ -47,12 +47,10 @@ class PosePublisher(Node):
     def goal_callback(self, msg):
         goal_msg = PoseStamped()
         goal_msg.header.stamp = self.get_clock().now().to_msg()
-        goal_msg.header.frame_id = self.frame_id  # 원하는 frame id로 설정
+        goal_msg.header.frame_id = self.frame_id
 
-        # pose 정보 복사
         goal_msg.pose = msg.pose
 
-        # 퍼블리시
         self.goal_pub.publish(goal_msg)
         self.get_logger().info(
             f'goal pose: {msg.pose.position.x}, {msg.pose.position.y}')

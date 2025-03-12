@@ -8,7 +8,7 @@ trg_ros2_node:
       topic:
         input:
           egoPose: "/trg/input/default_pose"
-          egoOdom: "/ground_truth_pose"
+          egoOdom: "/fake_robot_pose"
           obsCloud: "/trip/trip_updated/alocal_cloud"
           goal: "/fake_goal"
         output:
@@ -20,24 +20,3 @@ trg_ros2_node:
           localTRG: "/trg/debug/default_localTRG"
           obsMap: "/trg/debug/default_obsMap"
           pathInfo: "/trg/debug/default_pathInfo"
-      timer:
-        graphRate: 5.0
-        planningRate: 5.0
-        publishRate: 10.0
-        debugRate: 1.0
-      map:
-        isPrebuiltMap: true
-        preMapPath: "maps/sim_mountain_0.1.pcd"
-      trg:
-        isPrebuiltTRG: false
-        preTrgPath: "trg/20240605_KI_exproom_terrain_trg.pcd"
-        isUpdate: true
-        expandDist: 0.6
-        robotSize: 0.5
-        sampleNum: 25
-        heightThreshold: 0.15
-        collisionThreshold: 0.1
-        updateCollisionThreshold: 0.5
-        safetyFactor: 3.0
-      planner:
-        goalTolerance: 0.8

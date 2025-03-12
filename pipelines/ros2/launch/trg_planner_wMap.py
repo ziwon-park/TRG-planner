@@ -31,15 +31,15 @@ def generate_launch_description():
     ]
 
     # Load rosparam (YAML file)
-    node = Node(package='trg_planner_ros',
-                executable='trg_ros2_node',
-                name='trg_ros2_node',
-                parameters=[
-                    ros2_config_file, {
-                        'mapConfig': LaunchConfiguration('map')
-                    }
-                ],
-                output='screen')
+    ros2_node = Node(package='trg_planner_ros',
+                     executable='trg_ros2_node',
+                     name='trg_ros2_node',
+                     parameters=[
+                         ros2_config_file, {
+                             'mapConfig': LaunchConfiguration('map')
+                         }
+                     ],
+                     output='screen')
 
     # Define the RViz node
     rviz_node = Node(package='rviz2',
@@ -49,4 +49,4 @@ def generate_launch_description():
                      condition=IfCondition(LaunchConfiguration('rviz')),
                      output='screen')
 
-    return LaunchDescription([rviz_arg, map_config_arg, node, rviz_node])
+    return LaunchDescription([rviz_arg, map_config_arg, ros2_node, rviz_node])
