@@ -34,8 +34,3 @@ target_link_libraries(trg_ros1_node
     ${catkin_LIBRARIES}
     trg_planner::trg_planner_core
 )
-
-catkin_install_python(PROGRAMS
-    scripts/fake_pose_pub.py
-    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)

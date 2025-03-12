@@ -2,14 +2,14 @@
 <package format="3">
   <name>trg_planner_ros</name>
   <version>1.0.0</version>
-  <description>TRG-planner ROS-Pipeline package</description>
+  <description>TRG-planner ROS package</description>
 
   <!-- Author and maintainers -->
   <author email="dklee@kaist.ac.kr">Dongkyu Lee</author>
   <maintainer email="dklee@kaist.ac.kr">Dongkyu Lee</maintainer>
 
   <!-- License -->
-  <license>Apache-2.0</license>
+  <license>Apache-2.0 with Commons Clause</license>
 
   <!-- Dependencies -->
   <buildtool_depend>catkin</buildtool_depend>

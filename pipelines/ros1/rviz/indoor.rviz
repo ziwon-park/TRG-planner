@@ -26,7 +26,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: preMap
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -97,7 +97,7 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Alpha: 1
-      Autocompute Intensity Bounds: false
+      Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 1.3954113721847534
         Min Value: -1.1380046606063843
@@ -111,9 +111,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 239; 41; 41
-      Max Intensity: 50
       Min Color: 0; 130; 255
-      Min Intensity: -5
       Name: preMap
       Position Transformer: XYZ
       Queue Size: 10
@@ -131,7 +129,7 @@ Visualization Manager:
       Marker Topic: /trg/debug/default_globalTRG
       Name: globalTRG
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -187,7 +185,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 1
-      Size (m): 1
+      Size (m): 2
       Style: Spheres
       Topic: /trg/output/default_goal
       Unreliable: false
@@ -222,7 +220,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 20.625980377197266
+      Distance: 20.542190551757812
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -230,17 +228,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -4.927432060241699
-        Y: -3.0147151947021484
-        Z: -0.46908092498779297
+        X: 4.387049674987793
+        Y: -0.48496150970458984
+        Z: 2.169567108154297
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8228476047515869
+      Pitch: 0.9727802872657776
       Target Frame: map
-      Yaw: 5.381460666656494
+      Yaw: 3.3206655979156494
     Saved: ~
 Window Geometry:
   Displays:
