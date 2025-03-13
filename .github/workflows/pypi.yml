@@ -32,6 +32,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libpcl-dev
+      - name: Set CMake Prefix Path for PCL
+        run: |
+          echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
       - name: Build test wheels (only PRs)
         if: github.event_name != 'release'
         uses: pypa/cibuildwheel@v2.16.5
@@ -52,7 +55,7 @@ jobs:
     needs: [cibuildwheel, build_sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: artifact
           path: dist
