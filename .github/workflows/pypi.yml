@@ -32,6 +32,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libpcl-dev
+      - name: Find PCL_DIR
+        run: |
+          sudo find / -name "PCLConfig.cmake"
       - name: Set PCL_DIR for CMake
         run: |
           echo "PCL_DIR=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
