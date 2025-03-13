@@ -28,6 +28,7 @@ ______________________________________________________________________
 
 - \[ \] GUI interface
 - \[ \] Prebuilt TRG save & load
+- \[ \] Setup Docker images
 - \[ \] Add workflows "Publish to PyPI.org"
 
 </details>
