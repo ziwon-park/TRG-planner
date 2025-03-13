@@ -34,7 +34,7 @@ jobs:
           sudo apt-get install -y libpcl-dev
       - name: Set PCL_DIR for CMake
         run: |
-          echo "PCL_DIR=/usr/local/lib/cmake/pcl" >> $GITHUB_ENV
+          echo "PCL_DIR=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
       - name: Set CMake Prefix Path for PCL
         run: |
           echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
