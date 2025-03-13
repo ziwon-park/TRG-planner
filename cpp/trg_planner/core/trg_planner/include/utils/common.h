@@ -1,3 +1,11 @@
+/**
+ * Copyright 2025, Korea Advanced Institute of Science and Technology
+ * Massachusetts Institute of Technology,
+ * Daejeon, 34051
+ * All Rights Reserved
+ * Authors: Dongkyu Lee, et al.
+ * See LICENSE for the license information
+ */
 #ifndef COMMON_H_
 #define COMMON_H_
 

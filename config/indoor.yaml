@@ -5,8 +5,8 @@ timer:
 map:
   isPrebuiltMap: true
   prebuiltMapPath: "prebuilt_maps/sim_indoor_0.1.pcd"
-  isVoxelize: false
-  voxelSize: 0.1
+  isVoxelize: true
+  voxelSize: 0.2
 trg:
   isPrebuiltTRG: false
   prebuiltTRGPath: "prebuilt_graphs/predefined_trg_indoor.pcd"

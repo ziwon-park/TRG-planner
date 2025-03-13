@@ -1,3 +1,11 @@
+/**
+ * Copyright 2025, Korea Advanced Institute of Science and Technology
+ * Massachusetts Institute of Technology,
+ * Daejeon, 34051
+ * All Rights Reserved
+ * Authors: Dongkyu Lee, et al.
+ * See LICENSE for the license information
+ */
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
@@ -14,9 +22,7 @@ PYBIND11_MODULE(trg_planner, m) {
 
   py::class_<TRG, std::shared_ptr<TRG>>(m, "TRG")
       .def(py::init<bool, float, float, int, float, float, float, float, float>())
-      .def("lockGraph", &TRG::lockGraph)
-      .def("unlockGraph", &TRG::unlockGraph)
-      .def("getGraph", &TRG::getGraph, "Get the graph", py::arg("type"));
+      .def("getGraphCopy", &TRG::getGraphCopy, "Get the graph", py::arg("type"));
 
   py::class_<TRG::Edge>(m, "Edge")
       .def(py::init<int, float, float>())
@@ -44,59 +50,29 @@ PYBIND11_MODULE(trg_planner, m) {
       // TRG functions
       .def("getTRG", &TRGPlanner::getTRG)
 
-      // Mutex functions
-      .def("lockOdom", &TRGPlanner::lockOdom)
-      .def("unlockOdom", &TRGPlanner::unlockOdom)
-      .def("lockObs", &TRGPlanner::lockObs)
-      .def("unlockObs", &TRGPlanner::unlockObs)
-      .def("lockGoal", &TRGPlanner::lockGoal)
-      .def("unlockGoal", &TRGPlanner::unlockGoal)
+      .def("setPose",
+           &TRGPlanner::setPose,
+           py::arg("pose")     = Eigen::Vector3f::Zero(),
+           py::arg("quat")     = Eigen::Vector4f(1, 0, 0, 0),
+           py::arg("frame_id") = "map")
+      .def("setObs", &TRGPlanner::setObs, py::arg("obs"))
+      .def("setGoal",
+           &TRGPlanner::setGoal,
+           py::arg("pose") = Eigen::Vector3f::Zero(),
+           py::arg("quat") = Eigen::Vector4f(1, 0, 0, 0))
 
-      // Setters
-      .def("setStateFrameId", &TRGPlanner::setStateFrameId, py::arg("frame_id"))
-      .def("setStatePose3d", &TRGPlanner::setStatePose3d, py::arg("pose3d"))
-      .def("setStatePose2d", &TRGPlanner::setStatePose2d, py::arg("pose2d"))
-      .def("setStateQuat", &TRGPlanner::setStateQuat, py::arg("quat"))
-      .def("setStateT_B2M", &TRGPlanner::setStateT_B2M, py::arg("T_B2M"))
+      .def("getPlannedPath", &TRGPlanner::getPlannedPath, py::arg("type") = "smooth")
+      .def("getPathInfo", &TRGPlanner::getPathInfo)
 
-      .def("setPreMapEigen", &TRGPlanner::setPreMapEigen, py::arg("preMapPtr"))
-      .def("setObsEigen", &TRGPlanner::setObsEigen, py::arg("obsPtr"))
-
-      .def("setGoalPose", &TRGPlanner::setGoalPose, py::arg("pose"))
-      .def("setGoalQuat", &TRGPlanner::setGoalQuat, py::arg("quat"))
-      .def("setGoalInit", &TRGPlanner::setGoalInit, py::arg("flag"))
-
-      .def("setFlagPoseIn", &TRGPlanner::setFlagPoseIn, py::arg("flag"))
-      .def("setFlagObsIn", &TRGPlanner::setFlagObsIn, py::arg("flag"))
-      .def("setFlagGoalIn", &TRGPlanner::setFlagGoalIn, py::arg("flag"))
-      .def("setFlagGraphInit", &TRGPlanner::setFlagGraphInit, py::arg("flag"))
-      .def("setFlagPathFound", &TRGPlanner::setFlagPathFound, py::arg("flag"))
-
-      // Getters
-      .def("getRawPath", &TRGPlanner::getRawPath)
-      .def("getSmoothPath", &TRGPlanner::getSmoothPath)
-      .def("getDirectDist", &TRGPlanner::getDirectDist)
-      .def("getRawPathLength", &TRGPlanner::getRawPathLength)
-      .def("getSmoothPathLength", &TRGPlanner::getSmoothPathLength)
-      .def("getPlanningTime", &TRGPlanner::getPlanningTime)
-      .def("getAvgRisk", &TRGPlanner::getAvgRisk)
-
-      .def("getStateFrameId", &TRGPlanner::getStateFrameId)
-      .def("getStatePose3d", &TRGPlanner::getStatePose3d)
-      .def("getStatePose2d", &TRGPlanner::getStatePose2d)
-      .def("getStateQuat", &TRGPlanner::getStateQuat)
-      .def("getStateT_B2M", &TRGPlanner::getStateT_B2M)
-
-      .def("getPreMapEigen", &TRGPlanner::getPreMapEigen)
-      .def("getObsEigen", &TRGPlanner::getObsEigen)
+      .def("getMapEigen", &TRGPlanner::getMapEigen, py::arg("type") = "preMap")
 
       .def("getGoalPose", &TRGPlanner::getGoalPose)
       .def("getGoalQuat", &TRGPlanner::getGoalQuat)
-      .def("getGoalInit", &TRGPlanner::getGoalInit)
 
-      .def("getFlagPoseIn", &TRGPlanner::getFlagPoseIn)
-      .def("getFlagObsIn", &TRGPlanner::getFlagObsIn)
+      .def("shutdown", &TRGPlanner::shutdown)
+      .def("setFlagPathFound", &TRGPlanner::setFlagPathFound, py::arg("flag"))
+      .def("getFlagPreMap", &TRGPlanner::getFlagPreMap)
+      .def("getFlagPathFound", &TRGPlanner::getFlagPathFound)
       .def("getFlagGoalIn", &TRGPlanner::getFlagGoalIn)
-      .def("getFlagGraphInit", &TRGPlanner::getFlagGraphInit)
-      .def("getFlagPathFound", &TRGPlanner::getFlagPathFound);
+      .def("getFlagGraphInit", &TRGPlanner::getFlagGraphInit);
 }

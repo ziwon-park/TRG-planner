@@ -30,7 +30,7 @@ Before setting up the ROS environment, make sure to install TRG-planner first:
 
 ```commandline
 cd ${MAIN_DIR_OF_TRG_PLANNER}
-make cppinstall
+sudo make cppinstall
 ```
 
 After installing TRG-planner, download the example prebuilt map files:
@@ -42,7 +42,7 @@ bash download_maps.sh
 
 After the download is complete, you will find two `.pcd` files in `prebuilt_maps` directory.
 
-## ⚙️ How to build & run
+## ⚙️ How To Build & Run
 
 ### 🐱 ROS1 (Noetic)
 
@@ -107,7 +107,9 @@ ______________________________________________________________________
 
 ## 🛠 Configuration
 
-You can customize the ROS parameters in `{ros1/ros2}/config/{ros1/ros2}_params.yaml` before launching the node.
+Please visit our [**Map configuration details**](https://github.com/url-kaist/TRG-planner/tree/main/config).
+
+You can also customize the ROS parameters in `{ros1/ros2}/config/{ros1/ros2}_params.yaml` before launching the node.
 
 ### Example Configuration
 

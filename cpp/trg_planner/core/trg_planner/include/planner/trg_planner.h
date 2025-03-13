@@ -1,3 +1,11 @@
+/**
+ * Copyright 2025, Korea Advanced Institute of Science and Technology
+ * Massachusetts Institute of Technology,
+ * Daejeon, 34051
+ * All Rights Reserved
+ * Authors: Dongkyu Lee, et al.
+ * See LICENSE for the license information
+ */
 #ifndef CPP_TRG_PLANNER_CORE_TRG_PLANNER_INCLUDE_PLANNER_TRG_PLANNER_H_
 #define CPP_TRG_PLANNER_CORE_TRG_PLANNER_INCLUDE_PLANNER_TRG_PLANNER_H_
 
@@ -74,6 +82,7 @@ class TRGPlanner {
       raw_path_length    = 0;
       smooth_path_length = 0;
       planning_time      = 0;
+      avg_risk           = 0;
     }
     std::vector<Eigen::Vector3f> raw;
     std::vector<Eigen::Vector3f> smooth;
@@ -165,67 +174,27 @@ class TRGPlanner {
 
  public:
   /// TRG functions
-  inline std::shared_ptr<TRG> getTRG() { return trg_; }
+  std::shared_ptr<TRG> getTRG();
 
-  /// Mutex functions
-  inline void lockOdom() { mtx.odom.lock(); }
-  inline void unlockOdom() { mtx.odom.unlock(); }
-  inline void lockObs() { mtx.obs.lock(); }
-  inline void unlockObs() { mtx.obs.unlock(); }
-  inline void lockGoal() { mtx.goal.lock(); }
-  inline void unlockGoal() { mtx.goal.unlock(); }
+  void setPose(const Eigen::Vector3f& pose,
+               const Eigen::Vector4f& quat,
+               const std::string&     frame_id);
+  void setObs(const Eigen::MatrixXf& obs);
+  void setGoal(const Eigen::Vector3f& pose, const Eigen::Vector4f& quat);
 
-  /// Setters
-  inline void setStateFrameId(const std::string& frame_id) { state_.frame_id = frame_id; }
-  inline void setStatePose3d(const Eigen::Vector3f& pose3d) { state_.pose3d = pose3d; }
-  inline void setStatePose2d(const Eigen::Vector2f& pose2d) { state_.pose2d = pose2d; }
-  inline void setStateQuat(const Eigen::Vector4f& quat) { state_.quat = quat; }
-  inline void setStateT_B2M(const Eigen::Matrix4f& T_B2M) { state_.T_B2M = T_B2M; }
+  std::vector<Eigen::Vector3f> getPlannedPath(const std::string& type);
+  std::vector<float>           getPathInfo();
+  Eigen::MatrixXf              getMapEigen(const std::string& type);
+  Eigen::Vector3f              getGoalPose();
+  Eigen::Vector4f              getGoalQuat();
 
-  inline void setPreMapEigen(const Eigen::MatrixXf& preMap) {
-    EigenToPointCloud(preMap, cs_.preMapPtr);
-  }
-  inline void setObsEigen(const Eigen::MatrixXf& obs) { EigenToPointCloud(obs, cs_.obsPtr); }
-
-  inline void setGoalPose(const Eigen::Vector3f& pose) { goal_state_.pose = pose; }
-  inline void setGoalQuat(const Eigen::Vector4f& quat) { goal_state_.quat = quat; }
-  inline void setGoalInit(bool flag) { goal_state_.init = flag; }
-
-  inline void setFlagPoseIn(bool flag) { flag_.poseIn = flag; }
-  inline void setFlagObsIn(bool flag) { flag_.obsIn = flag; }
-  inline void setFlagGoalIn(bool flag) { flag_.goalIn = flag; }
-  inline void setFlagGraphInit(bool flag) { flag_.graphInit = flag; }
+  inline void shutdown() { is_running.store(false); }
   inline void setFlagPathFound(bool flag) { flag_.pathFound = flag; }
 
-  /// Getters
-  inline std::vector<Eigen::Vector3f> getRawPath() const { return path_.raw; }
-  inline std::vector<Eigen::Vector3f> getSmoothPath() const { return path_.smooth; }
-  inline float                        getDirectDist() const { return path_.direct_dist; }
-  inline float                        getRawPathLength() const { return path_.raw_path_length; }
-  inline float getSmoothPathLength() const { return path_.smooth_path_length; }
-  inline float getPlanningTime() const { return path_.planning_time; }
-  inline float getAvgRisk() const { return path_.avg_risk; }
-
-  inline std::string     getStateFrameId() const { return state_.frame_id; }
-  inline Eigen::Vector3f getStatePose3d() const { return state_.pose3d; }
-  inline Eigen::Vector2f getStatePose2d() const { return state_.pose2d; }
-  inline Eigen::Vector4f getStateQuat() const { return state_.quat; }
-  inline Eigen::Matrix4f getStateT_B2M() const { return state_.T_B2M; }
-
-  inline Eigen::MatrixXf getPreMapEigen() const { return PointCloudToEigen(cs_.preMapPtr); }
-  inline Eigen::MatrixXf getObsEigen() const { return PointCloudToEigen(cs_.obsPtr); }
-
-  inline Eigen::Vector3f getGoalPose() const { return goal_state_.pose; }
-  inline Eigen::Vector4f getGoalQuat() const { return goal_state_.quat; }
-  inline bool            getGoalInit() const { return goal_state_.init; }
-
-  inline bool getFlagPoseIn() const { return flag_.poseIn; }
-  inline bool getFlagObsIn() const { return flag_.obsIn; }
+  inline bool getFlagPreMap() const { return param_.isPreMap; }
+  inline bool getFlagPathFound() const { return flag_.pathFound; }
   inline bool getFlagGoalIn() const { return flag_.goalIn; }
   inline bool getFlagGraphInit() const { return flag_.graphInit; }
-  inline bool getFlagPathFound() const { return flag_.pathFound; }
-
-  inline bool getParamIsVerbose() const { return param_.isVerbose; }
 };
 
 #endif  // CPP_TRG_PLANNER_CORE_TRG_PLANNER_INCLUDE_PLANNER_TRG_PLANNER_H_

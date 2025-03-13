@@ -1,3 +1,11 @@
+/**
+ * Copyright 2025, Korea Advanced Institute of Science and Technology
+ * Massachusetts Institute of Technology,
+ * Daejeon, 34051
+ * All Rights Reserved
+ * Authors: Dongkyu Lee, et al.
+ * See LICENSE for the license information
+ */
 #include "trg_planner/include/graph/trg.h"
 
 TRG::TRG(bool  isVerbose,
@@ -686,9 +694,25 @@ bool TRG::isFrontier(Eigen::Vector2f& pos) {
   return false;
 }
 
-std::unordered_map<int, TRG::Node*> TRG::getGraph(std::string type) {
+std::unordered_map<int, TRG::Node*> TRG::getGraph(std::string type = "global") {
   trgStruct& graph = *trgMap_[type];
   return graph.nodes;
+}
+
+std::unordered_map<int, TRG::Node*> TRG::getGraphCopy(std::string type = "global") {
+  std::lock_guard<std::mutex>         lock(mtx.graph);
+  std::unordered_map<int, TRG::Node*> nodes_copy;
+  trgStruct&                          graph = *trgMap_[type];
+  for (auto& node : graph.nodes) {
+    Eigen::Vector2f pos = node.second->pos_.head(2);
+    Node* node_copy = new Node(node.second->id_, pos, node.second->pos_.z(), node.second->state_);
+    for (auto& edge : node.second->edges_) {
+      Edge* edge_copy = new Edge(edge->dst_id_, edge->weight_, edge->dist_);
+      node_copy->edges_.push_back(edge_copy);
+    }
+    nodes_copy[node.first] = node_copy;
+  }
+  return nodes_copy;
 }
 
 void TRG::lockGraph() { mtx.graph.lock(); }

@@ -11,7 +11,6 @@ cd build
 echo "Running cmake ..."
 cmake .. -DCMAKE_BUILD_TYPE=Release
 
-# 빌드 시작
 echo "Running make ..."
 make -j 48
 

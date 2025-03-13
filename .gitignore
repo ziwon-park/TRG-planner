@@ -1,6 +1,7 @@
 *.pcd
 */data/
 */assets/
+*.zip
 
 # Created by https://www.toptal.com/developers/gitignore/api/c++,python,visualstudiocode,pycharm,ros,ros2
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,python,visualstudiocode,pycharm,ros,ros2

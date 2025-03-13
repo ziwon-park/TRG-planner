@@ -1,3 +1,11 @@
+/**
+ * Copyright 2025, Korea Advanced Institute of Science and Technology
+ * Massachusetts Institute of Technology,
+ * Daejeon, 34051
+ * All Rights Reserved
+ * Authors: Dongkyu Lee, et al.
+ * See LICENSE for the license information
+ */
 #ifndef CPP_TRG_PLANNER_CORE_TRG_PLANNER_INCLUDE_GRAPH_TRG_H_
 #define CPP_TRG_PLANNER_CORE_TRG_PLANNER_INCLUDE_GRAPH_TRG_H_
 
@@ -85,6 +93,7 @@ class TRG {
   bool isFrontier(Eigen::Vector2f& pos2d);
 
   std::unordered_map<int, Node*> getGraph(std::string type);
+  std::unordered_map<int, Node*> getGraphCopy(std::string type);
   void                           lockGraph();
   void                           unlockGraph();
 

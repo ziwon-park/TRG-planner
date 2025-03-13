@@ -1,3 +1,11 @@
+/**
+ * Copyright 2025, Korea Advanced Institute of Science and Technology
+ * Massachusetts Institute of Technology,
+ * Daejeon, 34051
+ * All Rights Reserved
+ * Authors: Dongkyu Lee, et al.
+ * See LICENSE for the license information
+ */
 #include "trg_planner/include/planner/trg_planner.h"
 
 TRGPlanner::TRGPlanner() {}
@@ -285,4 +293,116 @@ void PlanningFSM::notice() {
   if (prev_state_ != curr_state_) {
     print("[Planning] " + state_map_[curr_state_]);
   }
+}
+
+std::shared_ptr<TRG> TRGPlanner::getTRG() { return trg_; }
+
+void TRGPlanner::setPose(const Eigen::Vector3f& pose     = Eigen::Vector3f::Zero(),
+                         const Eigen::Vector4f& quat     = Eigen::Vector4f(1, 0, 0, 0),
+                         const std::string&     frame_id = "map") {
+  std::lock_guard<std::mutex> lock(mtx.odom);
+  state_.frame_id = frame_id;
+  state_.pose3d   = pose;
+  state_.pose2d   = pose.head(2);
+  state_.quat     = quat;
+  Eigen::Quaternionf q(state_.quat[0], state_.quat[1], state_.quat[2], state_.quat[3]);
+  state_.T_B2M.block<3, 3>(0, 0) = q.toRotationMatrix();
+  state_.T_B2M.block<3, 1>(0, 3) = state_.pose3d;
+  flag_.poseIn                   = true;
+}
+
+void TRGPlanner::setObs(const Eigen::MatrixXf& obs) {
+  if (!flag_.poseIn) {
+    print_error("Pose is not initialized");
+    return;
+  }
+  std::lock_guard<std::mutex> lock(mtx.obs);
+  cs_.obsPtr->clear();
+  for (int i = 0; i < obs.rows(); i++) {
+    PtsDefault pt;
+    pt.x = obs(i, 0);
+    pt.y = obs(i, 1);
+    pt.z = obs(i, 2);
+    cs_.obsPtr->push_back(pt);
+  }
+  flag_.obsIn = true;
+}
+
+void TRGPlanner::setGoal(const Eigen::Vector3f& pose,
+                         const Eigen::Vector4f& quat = Eigen::Vector4f(1, 0, 0, 0)) {
+  if (!flag_.graphInit) {
+    print_error("Graph is not initialized");
+    return;
+  }
+  std::lock_guard<std::mutex> lock(mtx.goal);
+  goal_state_.pose = pose;
+  goal_state_.quat = quat;
+  goal_state_.init = true;
+  flag_.goalIn     = true;
+}
+
+std::vector<Eigen::Vector3f> TRGPlanner::getPlannedPath(const std::string& type) {
+  if (!flag_.pathFound) {
+    print_error("Path is not found");
+    return {};
+  }
+  std::vector<Eigen::Vector3f> path;
+  if (type == "raw") {
+    for (auto& pt : path_.raw) {
+      path.push_back(pt.head(3));
+    }
+  } else if (type == "smooth") {
+    for (auto& pt : path_.smooth) {
+      path.push_back(pt.head(3));
+    }
+  } else {
+    print_error("Invalid path type");
+    return {};
+  }
+  return path;
+}
+
+std::vector<float> TRGPlanner::getPathInfo() {
+  if (!flag_.pathFound) {
+    print_error("Path is not found");
+    return {};
+  }
+  std::vector<float> info;
+  info.push_back(path_.direct_dist);
+  info.push_back(path_.raw_path_length);
+  info.push_back(path_.smooth_path_length);
+  info.push_back(path_.planning_time);
+  info.push_back(path_.avg_risk);
+  return info;
+}
+
+Eigen::MatrixXf TRGPlanner::getMapEigen(const std::string& type = "pre") {
+  if (type == "pre") {
+    if (!param_.isPreMap) {
+      print_error("Prebuilt map is not loaded");
+      return Eigen::MatrixXf();
+    }
+    return PointCloudToEigen(cs_.preMapPtr);
+  } else if (type == "obs") {
+    return PointCloudToEigen(cs_.obsPtr);
+  } else {
+    print_error("Invalid map type");
+    return Eigen::MatrixXf();
+  }
+}
+
+Eigen::Vector3f TRGPlanner::getGoalPose() {
+  if (!goal_state_.init) {
+    print_error("Goal is not initialized");
+    return Eigen::Vector3f::Zero();
+  }
+  return goal_state_.pose;
+}
+
+Eigen::Vector4f TRGPlanner::getGoalQuat() {
+  if (!goal_state_.init) {
+    print_error("Goal is not initialized");
+    return Eigen::Vector4f::Zero();
+  }
+  return goal_state_.quat;
 }
