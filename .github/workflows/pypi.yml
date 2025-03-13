@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build sdist
-        run: pipx run build --sdist ${{ github.workspace }}/python/
+        run: python -m build --sdist ${{ github.workspace }}/python/
       - name: Move sdist to dist
         run: mkdir -p dist && mv ${{ github.workspace }}/python/dist/*.tar.gz dist/
       - uses: actions/upload-artifact@v3
