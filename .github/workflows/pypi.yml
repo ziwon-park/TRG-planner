@@ -14,9 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build sdist
-        run: pipx run build --sdist ${{github.workspace}}/python/
+        run: pipx run build --sdist ${{ github.workspace }}/python/
       - name: Move sdist to dist
-        run: mkdir -p dist && mv ${{github.workspace}}/python/dist/*.tar.gz dist/
+        run: mkdir -p dist && mv ${{ github.workspace }}/python/dist/*.tar.gz dist/
       - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
@@ -34,12 +34,12 @@ jobs:
         env: # build 1 build per platform just to make sure we can do it later when releasing
           CIBW_BUILD: "cp310-*"
         with:
-          package-dir: ${{github.workspace}}/python/
+          package-dir: ${{ github.workspace }}/python/
       - name: Build all wheels
         if: github.event_name == 'release'
         uses: pypa/cibuildwheel@v2.16.5
         with:
-          package-dir: ${{github.workspace}}/python/
+          package-dir: ${{ github.workspace }}/python/
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
