@@ -28,6 +28,7 @@ ______________________________________________________________________
 
 - \[ \] GUI interface
 - \[ \] Prebuilt TRG save & load
+- \[ \] Add pypi workflows
 
 </details>
 
