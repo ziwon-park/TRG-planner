@@ -19,6 +19,8 @@ set(TRG_DIR ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "TRG_DIR: ${TRG_DIR}")
 add_definitions(-DTRG_DIR="${TRG_DIR}")
 
+set(PCL_DIR "/usr/lib/x86_64-linux-gnu/cmake/pcl")
+
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)

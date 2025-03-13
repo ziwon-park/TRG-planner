@@ -34,13 +34,13 @@ jobs:
           sudo apt-get install -y libpcl-dev
       - name: Find PCL_DIR
         run: |
-          sudo find / -name "PCLConfig.cmake"
-      - name: Set PCL_DIR for CMake
-        run: |
-          echo "PCL_DIR=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
-      - name: Set CMake Prefix Path for PCL
-        run: |
-          echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
+          sudo find /usr/lib/x86_64-linux-gnu/cmake/pcl/ -name "PCLConfig.cmake"
+      # - name: Set PCL_DIR for CMake
+      #   run: |
+      #     echo "PCL_DIR=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
+      # - name: Set CMake Prefix Path for PCL
+      #   run: |
+      #     echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/pcl" >> $GITHUB_ENV
       - name: Build test wheels (only PRs)
         if: github.event_name != 'release'
         uses: pypa/cibuildwheel@v2.16.5
