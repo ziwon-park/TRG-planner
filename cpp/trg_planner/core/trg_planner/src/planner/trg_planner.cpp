@@ -46,11 +46,15 @@ void TRGPlanner::init() {
   //// Initialize observation map
   cs_.obsPtr.reset(new pcl::PointCloud<PtsDefault>());
 
-  //// TODO: Load prebuilt graph
+  //// Initialize graph state
   if (param_.isPreGraph) {
-    print("Prebuilt graph is loaded");
+    if (!param_.isPreMap) {
+      print_error("Cannot load prebuilt graph without prebuilt map");
+      exit(1);
+    }
+    fsm_.graph.curr_state_ = graphState::INIT;
   } else {
-    print("Prebuilt graph is not loaded");
+    fsm_.graph.curr_state_ = graphState::INIT;
   }
 
   //// Initialize FSM Threads
@@ -126,6 +130,11 @@ void TRGPlanner::runGraphFSM() {
           break;
         }
 
+        if (param_.isPreGraph) {
+          fsm_.graph.transition(graphState::LOAD);
+          break;
+        }
+
         if (param_.isPreMap) {
           auto start_init_graph = tic();
           trg_->initGraph(param_.isPreMap, state_.pose3d);
@@ -174,6 +183,11 @@ void TRGPlanner::runGraphFSM() {
         break;
       }
       case graphState::LOAD: {
+        auto start = tic();
+        trg_->loadPrebuiltGraph(param_.preGraphPath);
+        print_warning("Graph load time: " + std::to_string(toc(start, "s")) + " sec");
+        flag_.graphInit = true;
+        fsm_.graph.transition(graphState::UPDATE);
         break;
       }
       case graphState::RESET: {

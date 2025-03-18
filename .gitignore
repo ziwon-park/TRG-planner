@@ -408,4 +408,8 @@ AMENT_IGNORE
 .history
 .ionide
 
+### Prebuilt
+prebuilt_graphs/
+prebuilt_maps/
+
 # End of https://www.toptal.com/developers/gitignore/api/c++,python,visualstudiocode,pycharm,ros,ros2

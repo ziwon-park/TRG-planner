@@ -63,9 +63,68 @@ void TRG::initGraph(bool isPreMap, Eigen::Vector3f start3d = Eigen::Vector3f::Ze
   assert(graph.node_id == 1 && "Root node is not generated");
 }
 
-void TRG::loadPrebuiltGraph() {
-  //// TODO: load prebuilt graph
-  print("TRG loadPrebuiltGraph");
+void TRG::loadPrebuiltGraph(const std::string& filepath) {
+    std::lock_guard<std::mutex> lock(mtx.graph);
+    std::string abs_path = std::string(TRG_DIR) + "/../../" + filepath;
+    print("Graph loaded from " + abs_path);
+    std::filesystem::path load_path = abs_path;
+
+    if (!std::filesystem::exists(load_path)) {
+        print_error("File not found: " + abs_path);
+        return;
+    }
+
+    try {
+        trgStruct& global_graph = *trgMap_["global"];
+        this->resetGraph("global");
+
+        std::ifstream file(load_path);
+        nlohmann::json graph_json;
+        file >> graph_json;
+
+        // load nodes
+        std::unordered_map<int, Node*> id_to_node;
+        for (const auto& node_json : graph_json["nodes"]) {
+            int id = node_json["id"];
+
+            Eigen::Vector3f pos(
+                node_json["pos"][0],
+                node_json["pos"][1],
+                node_json["pos"][2]
+            );
+            NodeState state = static_cast<NodeState>(node_json["state"].get<int>());
+
+            Eigen::Vector2f pos2d = pos.head(2);
+            Node* node_ptr = new Node(id, pos2d, pos.z(), state);
+            global_graph.nodes[id] = node_ptr;
+            id_to_node[id] = node_ptr;
+            
+            float pos_arr[2] = {pos.x(), pos.y()};
+            kd_insert2(global_graph.node_tree, pos_arr[0], pos_arr[1], node_ptr);
+            
+            if (id >= global_graph.node_id) {
+                global_graph.node_id = id + 1;
+            }
+        }
+
+        // load edges
+        for (const auto& edge_json : graph_json["edges"]){
+            int source_id = edge_json["source"];
+            int target_id = edge_json["target"];
+            float weight = edge_json["weight"];
+            float dist = edge_json["dist"];
+
+            Node* source_node = id_to_node[source_id];
+            Edge* edge = new Edge(target_id, weight, dist);
+            source_node->edges_.push_back(edge);
+        }
+        print_success("Graph loaded from " + abs_path);
+    }
+    catch (const std::exception& e) {
+        print_error("Failed to load graph: " + std::string(e.what()));
+        return;
+    }
+
 }
 
 void TRG::setGlobalMap(PointCloudPtr& map) {

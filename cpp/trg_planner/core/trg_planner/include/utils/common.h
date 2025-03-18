@@ -47,6 +47,9 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+/// JSON
+#include <nlohmann/json.hpp>
+
 //// DataType
 using PtsDefault    = pcl::PointXYZ;
 using PointCloudPtr = std::shared_ptr<pcl::PointCloud<PtsDefault>>;

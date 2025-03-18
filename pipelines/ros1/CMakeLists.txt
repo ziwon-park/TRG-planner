@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16...3.24)
+project(trg_planner_ros)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -30,6 +31,8 @@ add_executable(trg_ros1_node
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ros1_node.cpp
 )
+add_definitions(-DTRG_ROS_DIR="${CMAKE_CURRENT_LIST_DIR}")
+
 target_link_libraries(trg_ros1_node
     ${catkin_LIBRARIES}
     trg_planner::trg_planner_core
