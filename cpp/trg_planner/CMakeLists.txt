@@ -30,6 +30,7 @@ add_library(${TARGET_NAME} STATIC
     ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner/src/kdtree/kdtree.c
     ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner/src/planner/trg_planner.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner/src/graph/trg.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/core/trg_planner/src/interface/interface.cpp
 )
 
 target_link_libraries(${TARGET_NAME}

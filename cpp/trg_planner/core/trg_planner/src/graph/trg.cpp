@@ -127,6 +127,55 @@ void TRG::loadPrebuiltGraph(const std::string& filepath) {
 
 }
 
+void TRG::saveGraph(const std::string& filepath) {
+    std::lock_guard<std::mutex> lock(mtx.graph);
+    
+    std::filesystem::path save_path = filepath;
+    
+    if (save_path.extension().empty()) {
+        save_path += ".json";
+    }
+    
+    std::filesystem::create_directories(save_path.parent_path());
+    
+    trgStruct& global_graph = *trgMap_["global"];
+
+    nlohmann::json graph_json;
+    
+    std::vector<nlohmann::json> nodes_json;
+    for (const auto& node_pair : global_graph.nodes) {
+        const Node* node = node_pair.second;
+        nlohmann::json node_json;
+
+        node_json["id"] = node->id_;
+        node_json["pos"] = {node->pos_.x(), node->pos_.y(), node->pos_.z()};
+        node_json["state"] = static_cast<int>(node->state_);
+
+        nodes_json.push_back(node_json);
+    }
+    graph_json["nodes"] = nodes_json;
+
+    std::vector<nlohmann::json> edges_json;
+    for (const auto& node_pair : global_graph.nodes) {
+        const Node* node = node_pair.second;
+        for (const Edge* edge : node->edges_) {
+            nlohmann::json edge_json;
+            edge_json["source"] = node->id_;
+            edge_json["target"] = edge->dst_id_;
+            edge_json["weight"] = edge->weight_;
+            edge_json["dist"] = edge->dist_;
+            edges_json.push_back(edge_json);
+        }
+    }
+    graph_json["edges"] = edges_json;
+
+    std::ofstream file(save_path);
+    file << graph_json.dump(4);
+    file.close();
+
+    print_success("Graph saved to " + save_path.string());
+}
+
 void TRG::setGlobalMap(PointCloudPtr& map) {
   print("TRG setGlobalMap", param_.isVerbose);
   trgStruct& global_graph = *trgMap_["global"];

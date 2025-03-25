@@ -76,7 +76,7 @@ void ROS1Node::getParams(const ros::NodeHandle &nh) {
   std::string map_config_name;
   nh.param("mapConfig", map_config_name, std::string("default"));
   std::string map_config_path =
-      std::string(TRG_ROS_DIR) + "/../config/" + map_config_name + ".yaml";
+      std::string(TRG_ROS_DIR) + "/config/" + map_config_name + ".yaml";
   if (!std::filesystem::exists(map_config_path)) {
     print_error("Map config file does not exist: " + map_config_path);
     exit(1);
@@ -277,9 +277,9 @@ void ROS1Node::debugTimer() {
     auto start_loop = tic();
     std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 
-    if (TRGPlanner::flag_.graphInit) {
+    // if (TRGPlanner::flag_.graphInit) {
       vizGraph("global", debug.global_trg_);
-    }
+    // }
     if (TRGPlanner::flag_.graphInit && TRGPlanner::param_.isUpdate) {
       vizGraph("local", debug.local_trg_);
     }

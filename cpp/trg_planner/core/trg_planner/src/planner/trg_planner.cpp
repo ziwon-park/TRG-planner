@@ -10,6 +10,10 @@
 
 TRGPlanner::TRGPlanner() {}
 TRGPlanner::~TRGPlanner() {
+  if (interface_) {
+    interface_->stopCommandListener();
+  }
+
   thd.graph.join();
   thd.planning.join();
 }
@@ -60,6 +64,13 @@ void TRGPlanner::init() {
   //// Initialize FSM Threads
   thd.graph    = std::thread(&TRGPlanner::runGraphFSM, this);
   thd.planning = std::thread(&TRGPlanner::runPlanningFSM, this);
+
+  /// Initialize Interface
+  if (!setupCommandInterface()) {
+    print_warning("Command interface is not available");
+  } else {
+    print("Command interface is ready");
+  }
 }
 
 void TRGPlanner::loadPrebuiltMap() {
@@ -130,37 +141,37 @@ void TRGPlanner::runGraphFSM() {
           break;
         }
 
-        if (param_.isPreGraph) {
-          fsm_.graph.transition(graphState::LOAD);
-          break;
-        }
+        // if (param_.isPreGraph) {
+        //   fsm_.graph.transition(graphState::LOAD);
+        //   break;
+        // }
 
-        if (param_.isPreMap) {
-          auto start_init_graph = tic();
-          trg_->initGraph(param_.isPreMap, state_.pose3d);
-          print_warning("Graph initialization time: " + std::to_string(toc(start_init_graph, "s")) +
-                        " sec");
-          flag_.graphInit = true;
-          fsm_.graph.transition(graphState::UPDATE);
-          break;
-        }
+        // if (param_.isPreMap) {
+        //   auto start_init_graph = tic();
+        //   trg_->initGraph(param_.isPreMap, state_.pose3d);
+        //   print_warning("Graph initialization time: " + std::to_string(toc(start_init_graph, "s")) +
+        //                 " sec");
+        //   flag_.graphInit = true;
+        //   fsm_.graph.transition(graphState::UPDATE);
+        //   break;
+        // }
 
-        if (!flag_.poseIn || !flag_.obsIn) {
-          print_warning("Pose: " + std::to_string(flag_.poseIn) +
-                        ", Obs: " + std::to_string(flag_.obsIn));
-          fsm_.graph.transition(graphState::INIT);
-          break;
-        }
-        mtx.obs.lock();
-        trg_->setGlobalMap(cs_.obsPtr);
-        mtx.obs.unlock();
+        // if (!flag_.poseIn || !flag_.obsIn) {
+        //   print_warning("Pose: " + std::to_string(flag_.poseIn) +
+        //                 ", Obs: " + std::to_string(flag_.obsIn));
+        fsm_.graph.transition(graphState::INIT);
+        //   break;
+        // }
+        // mtx.obs.lock();
+        // trg_->setGlobalMap(cs_.obsPtr);
+        // mtx.obs.unlock();
 
-        auto start_init_graph = tic();
-        trg_->initGraph(param_.isPreMap, state_.pose3d);
-        print_warning("Graph initialization time: " + std::to_string(toc(start_init_graph, "s")) +
-                      " sec");
-        flag_.graphInit = true;
-        fsm_.graph.transition(graphState::UPDATE);
+        // auto start_init_graph = tic();
+        // trg_->initGraph(param_.isPreMap, state_.pose3d);
+        // print_warning("Graph initialization time: " + std::to_string(toc(start_init_graph, "s")) +
+        //               " sec");
+        // flag_.graphInit = true;
+        // fsm_.graph.transition(graphState::UPDATE);
         break;
       }
       case graphState::UPDATE: {
@@ -182,6 +193,13 @@ void TRGPlanner::runGraphFSM() {
         fsm_.graph.transition(graphState::UPDATE);
         break;
       }
+      case graphState::EXPAND:    {
+          auto start = tic();
+          trg_->initGraph(false, state_.pose3d);
+          print_warning("Graph expansion time: " + std::to_string(toc(start, "s")) + " sec");
+          flag_.graphInit = true;
+          fsm_.graph.transition(graphState::UPDATE);
+          break;}
       case graphState::LOAD: {
         auto start = tic();
         trg_->loadPrebuiltGraph(param_.preGraphPath);
@@ -191,10 +209,22 @@ void TRGPlanner::runGraphFSM() {
         break;
       }
       case graphState::RESET: {
-        break;
+          trg_->resetGraph("global");
+          trg_->resetGraph("local");
+
+          flag_.graphInit = false; 
+          print_success("Graph reset completed");
+          fsm_.graph.transition(graphState::INIT); 
+          break;
       }
       case graphState::SAVE: {
-        break;
+          if (!param_.preGraphPath.empty()) {
+              trg_->saveGraph(param_.preGraphPath);
+          } else {
+              print_error("No save path specified");
+          }
+          // trg_->saveGraph(param_.preGraphPath);
+          break;
       }
       default: {
         print_error("Invalid graph state");
@@ -419,4 +449,110 @@ Eigen::Vector4f TRGPlanner::getGoalQuat() {
     return Eigen::Vector4f::Zero();
   }
   return goal_state_.quat;
+}
+
+// Interface
+
+bool TRGPlanner::setupCommandInterface(const std::string& pipePath) {
+  interface_ = std::make_unique<trg::TRGInterface>(pipePath);
+
+  if (!interface_->init([this](const OperationRequest& request) -> OperationResponse {
+        return this->processOperation(request);
+      })) {
+    print_error("Failed to initialize command interface");
+    return false; 
+  }
+
+  if (!interface_->startCommandListener()) {
+    print_error("Failed to start command listener");
+    return false;
+  }
+  
+  print("Command interface ready at " + pipePath);
+  return true;
+}
+
+OperationResponse TRGPlanner::processOperation(const OperationRequest& request) {
+  OperationResponse response;
+  response.success = false;
+  
+  try {
+    if (request.type == "graph") {
+      if (request.command == "expand") {
+        fsm_.graph.transition(graphState::EXPAND);
+        response.success = true;
+        response.message = "Graph expansion triggered";
+      } 
+      else if (request.command == "load") {
+        if (request.filepath.empty()) {
+          response.message = "Filepath is required for load operation";
+          return response;
+        }
+        
+        param_.preGraphPath = request.filepath;
+        fsm_.graph.transition(graphState::LOAD);
+        response.success = true;
+        response.message = "Graph load triggered with path: " + request.filepath;
+      } 
+      else if (request.command == "reset") {
+        fsm_.graph.transition(graphState::RESET);
+        response.success = true;
+        response.message = "Graph reset triggered";
+      } 
+      else if (request.command == "save") {
+        if (request.filepath.empty()) {
+          response.message = "Filepath is required for save operation";
+          return response;
+        }
+        
+        fsm_.graph.transition(graphState::SAVE);
+        response.success = true;
+        response.message = "Graph save triggered with path: " + request.filepath;
+      } 
+      else {
+        response.message = "Invalid graph command: " + request.command;
+      }
+    } 
+    else if (request.type == "path") {
+      if (request.command == "plan") {
+        if (!flag_.graphInit) {
+          response.message = "Graph is not initialized";
+          return response;
+        }
+        
+        flag_.goalIn = true;  // 이 플래그가 planningFSM에서 계획 상태로 전환을 트리거함
+        response.success = true;
+        response.message = "Path planning triggered";
+      } 
+      else if (request.command == "reset") {
+        fsm_.planning.transition(planningState::RESET);
+        response.success = true;
+        response.message = "Path reset triggered";
+      }
+      else if (request.command == "load" || request.command == "save") {
+        if (request.filepath.empty()) {
+          response.message = "Filepath is required for " + request.command + " operation";
+          return response;
+        }
+        
+        response.message = "Path " + request.command + " operation not implemented yet";
+      }
+      else {
+        response.message = "Invalid path command: " + request.command;
+      }
+    } 
+    else {
+      response.message = "Invalid operation type. Must be 'graph' or 'path'.";
+    }
+  } 
+  catch (const std::exception& e) {
+    response.success = false;
+    response.message = std::string("Error: ") + e.what();
+  } 
+  catch (...) {
+    response.success = false;
+    response.message = "Unknown error occurred";
+  }
+  
+  return response;
 }

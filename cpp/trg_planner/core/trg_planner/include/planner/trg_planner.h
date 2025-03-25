@@ -12,6 +12,9 @@
 #include "trg_planner/include/graph/trg.h"
 #include "trg_planner/include/utils/common.h"
 
+#include "trg_planner/include/interface/operation.h"
+#include "trg_planner/include/interface/interface.h"
+
 template <typename State>
 class FSM {
  public:
@@ -26,7 +29,14 @@ class FSM {
   std::unordered_map<State, std::string> state_map_;
 };
 
-enum struct graphState { INIT, UPDATE, LOAD, RESET, SAVE };
+enum struct graphState { 
+  INIT, 
+  UPDATE, 
+  LOAD, 
+  EXPAND, 
+  RESET, 
+  SAVE 
+};
 
 class GraphFSM : public FSM<graphState> {
  public:
@@ -35,6 +45,7 @@ class GraphFSM : public FSM<graphState> {
             {{graphState::INIT, "INIT"},
              {graphState::UPDATE, "UPDATE"},
              {graphState::LOAD, "LOAD"},
+             {graphState::EXPAND, "EXPAND"},
              {graphState::RESET, "RESET"},
              {graphState::SAVE, "SAVE"}}) {}
 
@@ -92,6 +103,11 @@ class TRGPlanner {
     float                        planning_time;
     float                        avg_risk;
   } path_;
+
+  // Interface
+  OperationResponse processOperation(const OperationRequest& request);
+  bool setupCommandInterface(const std::string& pipePath = "/tmp/trg_planner_fifo");
+
 
  protected:
   struct Mutex {
@@ -195,6 +211,9 @@ class TRGPlanner {
   inline bool getFlagPathFound() const { return flag_.pathFound; }
   inline bool getFlagGoalIn() const { return flag_.goalIn; }
   inline bool getFlagGraphInit() const { return flag_.graphInit; }
+
+ private:
+  std::unique_ptr<trg::TRGInterface> interface_;
 };
 
 #endif  // CPP_TRG_PLANNER_CORE_TRG_PLANNER_INCLUDE_PLANNER_TRG_PLANNER_H_

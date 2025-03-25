@@ -61,6 +61,7 @@ class TRG {
 
   void initGraph(bool isPreMap, Eigen::Vector3f start3d);
   void loadPrebuiltGraph(const std::string& filepath);
+  void saveGraph(const std::string& filepath);
 
   void setGlobalMap(PointCloudPtr& map);
   void setLocalMap(Eigen::Vector2f start2d, PointCloudPtr& map);
